@@ -1,4 +1,4 @@
-namespace ColorBlockJam.Core
+namespace ColorBlockJamClone.Core
 {
     public enum GameState
     {

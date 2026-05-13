@@ -1,49 +1,51 @@
-using ColorBlockJam.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class GameManager : MonoBehaviour
+namespace ColorBlockJamClone.Core
 {
-    public static GameManager Instance { get; private set; }
-
-    public GameState State { get; private set; } = GameState.Boot;
-
-    [SerializeField] private string _gameplaySceneName = "Gameplay";
-
-    private void Awake()
+    public class GameManager : MonoBehaviour
     {
-        if(Instance != null && Instance != this)
+        public static GameManager Instance { get; private set; }
+
+        public GameState State { get; private set; } = GameState.Boot;
+
+        [SerializeField] private string _gameplaySceneName = "Gameplay";
+
+        private void Awake()
         {
-            Destroy(gameObject);
-            return;
+            if(Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+
+            ServiceLocator.Register(this);
+
+            SceneManager.LoadScene(_gameplaySceneName, LoadSceneMode.Single);
+
+            Debug.Log("[GameManager] Bootstrap complete.");
         }
 
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
+        private void OnDestroy()
+        {
+            if (Instance != this)
+                return;
 
-        ServiceLocator.Register(this);
+            ServiceLocator.Clear();
+            Instance = null;
+        }
 
-        SceneManager.LoadScene(_gameplaySceneName, LoadSceneMode.Single);
+        public void SetState(GameState newState)
+        {
+            if (State == newState)
+                return;
 
-        Debug.Log("[GameManager] Bootstrap complete.");
-    }
+            Debug.Log($"[GameManager] State changed to: {State} -> {newState}");
 
-    private void OnDestroy()
-    {
-        if (Instance != this)
-            return;
-
-        ServiceLocator.Clear();
-        Instance = null;
-    }
-
-    public void SetState(GameState newState)
-    {
-        if (State == newState)
-            return;
-
-        Debug.Log($"[GameManager] State changed to: {State} -> {newState}");
-
-        State = newState;
+            State = newState;
+        }
     }
 }
