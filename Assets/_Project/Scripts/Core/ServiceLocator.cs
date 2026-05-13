@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace ColorBlockJam.Core
 {
-    public static class ServiceLocator : MonoBehaviour
+    public static class ServiceLocator
     {
         private static Dictionary<Type, object> _services = new Dictionary<Type, object>();
 
