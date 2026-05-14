@@ -6,7 +6,7 @@ namespace ColorBlockJamClone.Data
     /// <summary>
     /// Maps the BlockColor to actual color display colors and materials
     /// </summary>
-    [CreateAssetMenu(fileName = "ColorPalette", menuName = "ColorBlockJamClone/Color Palette")]
+    [CreateAssetMenu(fileName = "ColorPalette_", menuName = "ColorBlockJamClone/Color Palette")]
     public class ColorPaletteSO : ScriptableObject
     {
         [Serializable]

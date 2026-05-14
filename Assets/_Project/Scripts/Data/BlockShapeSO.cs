@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace ColorBlockJamClone.Data
 {
-    [CreateAssetMenu(fileName = "BlockShape", menuName = "ColorBlockJamClone/Block Shape")]
+    [CreateAssetMenu(fileName = "Block_", menuName = "ColorBlockJamClone/Block Shape")]
     public class BlockShapeSO : ScriptableObject
     {
         [SerializeField] private string _shapeName;
@@ -15,7 +15,7 @@ namespace ColorBlockJamClone.Data
         public Vector2Int[] GetRotatedOffsets(int rotationSteps)
         {
             rotationSteps = (((rotationSteps % 4) + 4) % 4);
-            
+
             var result = new Vector2Int[_cellOffsets.Length];
             for (int i = 0; i < _cellOffsets.Length; i++)
                 result[i] = RotateOffset(_cellOffsets[i], rotationSteps);
