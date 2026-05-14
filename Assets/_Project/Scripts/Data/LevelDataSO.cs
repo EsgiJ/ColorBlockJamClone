@@ -1,5 +1,4 @@
 using System;
-using System.Data;
 using UnityEngine;
 
 namespace ColorBlockJamClone.Data
@@ -22,7 +21,7 @@ namespace ColorBlockJamClone.Data
         [Range(1, 4)] public int width;
     }
 
-    [CreateAssetMenu(fileName = "Level_", menuName = "ColorBlockJam/Level Data")]
+    [CreateAssetMenu(fileName = "Level_", menuName = "ColorBlockJamClone/Level Data")]
     public class LevelDataSO : ScriptableObject
     {
         [Header("Grid")]

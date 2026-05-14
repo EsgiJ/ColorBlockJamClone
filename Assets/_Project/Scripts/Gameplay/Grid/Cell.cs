@@ -1,10 +1,7 @@
 using UnityEngine;
 
-namespace ColorBlockJam.Gameplay.Grid
+namespace ColorBlockJamClone.Gameplay.Grid
 {
-    /// <summary>
-    /// Single cell on the grid. Pure data
-    /// </summary>
     public class Cell
     {
         public Vector2Int Position { get; }

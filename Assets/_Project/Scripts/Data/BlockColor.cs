@@ -8,6 +8,6 @@ namespace ColorBlockJamClone.Data
         Yellow,
         Orange,
         Purple,
-        Cyan
+        Pink
     }
 }
