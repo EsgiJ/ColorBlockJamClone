@@ -83,19 +83,35 @@ namespace ColorBlockJamClone.Gameplay.Block
             transform.position = grid.GridToWorldCentered(newPos);
         }
 
-        public void AnimateExit(Vector3 exitDirection, Action onComplete)
+        public void PlayPickup()
         {
-            const float duration = 0.4f;
-
-            transform.DOMove(transform.position + exitDirection * (CellSize * 2f), duration)
-                .SetEase(Ease.InCubic);
-
-            transform.DOScale(Vector3.zero, duration).SetEase(Ease.InCubic)
-                .OnComplete(() =>
-                {
-                    onComplete?.Invoke();
-                    Destroy(gameObject);
-                });
+            transform.DOKill();
+            transform.DOScale(Vector3.one * 1.08f, 0.12f).SetEase(Ease.OutBack);
         }
+
+        public void PlaySnap()
+        {
+            transform.DOKill();
+            transform.DOScale(Vector3.one, 0.18f).SetEase(Ease.OutBounce);
+        }
+
+        public void AnimateExit(Vector3 outwardDir, Action onComplete)
+        {
+            transform.DOKill();
+
+            const float duration = 0.55f;
+
+            Sequence seq = DOTween.Sequence();
+            seq.Append(transform.DOMove(transform.position + outwardDir * (CellSize * 1.2f), duration)
+                .SetEase(Ease.InCubic));
+
+            seq.Join(transform.DOScale(Vector3.zero, duration).SetEase(Ease.InCubic));
+        }
+
+        public void ResetForReuse()
+        {
+            transform.DOKill();
+            transform.localScale = Vector3.one;
+        }        
     }
 }

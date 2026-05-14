@@ -66,6 +66,8 @@ namespace ColorBlockJamClone.Gameplay.Input
                 _gameStarted = true;
                 GameEvents.RaiseLevelStarted();
             }
+
+            _dragging.PlayPickup();
         }
 
         private void UpdateDrag()
@@ -140,6 +142,10 @@ namespace ColorBlockJamClone.Gameplay.Input
                     exitGate.OutwardWorldDirection,
                     () => _onBlockExited?.Invoke(exitedBlock)
                 );
+            }
+            else
+            {
+                _dragging.PlaySnap();
             }
 
             _dragging = null;
