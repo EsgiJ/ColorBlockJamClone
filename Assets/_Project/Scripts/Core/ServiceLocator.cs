@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace ColorBlockJamClone.Core
 {
+    /// <summary>
+    /// ServiceLocator pattern
+    /// </summary>
     public static class ServiceLocator
     {
         private static Dictionary<Type, object> _services = new Dictionary<Type, object>();

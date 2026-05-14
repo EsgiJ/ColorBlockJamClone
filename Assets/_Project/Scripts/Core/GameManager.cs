@@ -3,6 +3,10 @@ using UnityEngine.SceneManagement;
 
 namespace ColorBlockJamClone.Core
 {
+    /// <summary>
+    /// This class persists across scenes
+    /// Manages the game and holds game state
+    /// </summary>
     public class GameManager : MonoBehaviour
     {
         public static GameManager Instance { get; private set; }
