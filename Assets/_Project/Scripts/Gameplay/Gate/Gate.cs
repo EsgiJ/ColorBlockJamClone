@@ -70,5 +70,30 @@ namespace ColorBlockJamClone.Gameplay.Gate
             transform.rotation = Quaternion.Euler(0f, yRot, 0f);
             transform.localScale = new Vector3(Width * cellSize, cellSize * 0.4f, cellSize * 0.5f);
         }
+
+        public bool CoversCell(Vector2Int cell, int gridWidth, int gridHeight)
+        {
+            switch (Side)
+            {
+                case GridSide.Bottom:
+                    return cell.y == 0 && cell.x >= PositionAlongSide && cell.x < PositionAlongSide + Width;
+                case GridSide.Top:
+                    return cell.y == gridHeight - 1 && cell.x >= PositionAlongSide && cell.x < PositionAlongSide + Width;
+                case GridSide.Left:
+                    return cell.x == 0 && cell.y >= PositionAlongSide && cell.y < PositionAlongSide + Width;
+                case GridSide.Right:
+                    return cell.x == gridWidth - 1 && cell.y >= PositionAlongSide && cell.y < PositionAlongSide + Width;
+            }
+            return false;
+        }
+
+        public Vector3 OutwardWorldDirection => Side switch
+        {
+            GridSide.Bottom => Vector3.back,
+            GridSide.Top    => Vector3.forward,
+            GridSide.Left   => Vector3.left,
+            GridSide.Right  => Vector3.right,
+            _ => Vector3.zero
+        };
     }
 }

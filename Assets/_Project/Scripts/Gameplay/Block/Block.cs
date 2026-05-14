@@ -1,16 +1,19 @@
 using UnityEngine;
 using ColorBlockJamClone.Data;
+using ColorBlockJamClone.Gameplay.Grid;
+using System;
+using DG.Tweening;
 
 namespace ColorBlockJamClone.Gameplay.Block
 {   
-    public class Block : MonoBehaviour
+    public class Block : MonoBehaviour, IGridOccupant
     {
-        [SerializeField] private Transform _cellsParent;
-
         public BlockShapeSO Shape { get; private set; }
         public BlockColor Color { get; private set; }
         public Vector2Int GridPosition { get; private set; }
         public int RotationSteps { get; private set; }
+        public float CellSize { get; private set; }
+        public ColorPaletteSO ColorPalette { get; private set; }
 
         public void Initialize(BlockShapeSO shape, BlockColor color, Vector2Int gridPosition, int rotationSteps, ColorPaletteSO palette, float cellSize)
         {
@@ -18,14 +21,16 @@ namespace ColorBlockJamClone.Gameplay.Block
             Color = color;
             GridPosition = gridPosition;
             RotationSteps = rotationSteps;
+            CellSize = cellSize;
+            ColorPalette = palette;
 
             name = $"Block_{color}_{shape.ShapeName}";
-            BuildVisual(palette, cellSize);
+            BuildVisual();
         }
 
-        private void BuildVisual(ColorPaletteSO palette, float cellSize)
+        private void BuildVisual()
         {
-            var material = palette.GetMaterial(Color);
+            var material = ColorPalette.GetMaterial(Color);
 
             if (Shape.VisualPrefab != null)
             {
@@ -40,9 +45,9 @@ namespace ColorBlockJamClone.Gameplay.Block
                 centroid /= offsets.Length;
 
                 visual.transform.localPosition = new Vector3(
-                    centroid.x * cellSize,
+                    centroid.x * CellSize,
                     0f,
-                    centroid.y * cellSize
+                    centroid.y * CellSize
                 );
 
                 visual.transform.localRotation = Quaternion.Euler(0f, -RotationSteps * 90f, 0f) * visual.transform.localRotation;
@@ -61,16 +66,36 @@ namespace ColorBlockJamClone.Gameplay.Block
             }
         }
 
-        /// <summary>
-        /// Returns the grid cells this block currently occupies
-        /// </summary>
-        public Vector2Int[] GetOccupiedCells()
+        public Vector2Int[] GetOccupiedCells() => GetCellsAt(GridPosition);
+
+        public Vector2Int[] GetCellsAt(Vector2Int origin)
         {
             var offsets = Shape.GetRotatedOffsets(RotationSteps);
             var result = new Vector2Int[offsets.Length];
             for (int i = 0; i < offsets.Length; i++)
-                result[i] = GridPosition + offsets[i];
+                result[i] = origin + offsets[i];
             return result;
+        }
+
+        public void SetGridPosition(Vector2Int newPos, GridSystem grid)
+        {
+            GridPosition = newPos;
+            transform.position = grid.GridToWorldCentered(newPos);
+        }
+
+        public void AnimateExit(Vector3 exitDirection, Action onComplete)
+        {
+            const float duration = 0.4f;
+
+            transform.DOMove(transform.position + exitDirection * (CellSize * 2f), duration)
+                .SetEase(Ease.InCubic);
+
+            transform.DOScale(Vector3.zero, duration).SetEase(Ease.InCubic)
+                .OnComplete(() =>
+                {
+                    onComplete?.Invoke();
+                    Destroy(gameObject);
+                });
         }
     }
 }

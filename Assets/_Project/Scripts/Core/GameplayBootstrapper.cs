@@ -3,6 +3,7 @@ using ColorBlockJamClone.Data;
 using ColorBlockJamClone.Gameplay.Block;
 using ColorBlockJamClone.Gameplay.Gate;
 using ColorBlockJamClone.Gameplay.Grid;
+using ColorBlockJamClone.Gameplay.Input;
 using UnityEngine;
 
 namespace ColorBlockJamClone.Core
@@ -14,7 +15,7 @@ namespace ColorBlockJamClone.Core
 
         [Header("Shared Assets")]
         [SerializeField] private ColorPaletteSO _palette;
-        [SerializeField] private float _cellSize = 1f;
+        [SerializeField] private float _cellSize = 2f;
         [SerializeField] private Transform _gridOrigin;
 
         [Header("Prefabs")]
@@ -28,8 +29,13 @@ namespace ColorBlockJamClone.Core
         [SerializeField] private Transform _blocksParent;
         [SerializeField] private Transform _gatesParent;
 
+        [Header("Input")]
+        [SerializeField] private DragInputHandler _dragInput;
+
         // Runtime state
         private GridSystem _grid;
+        private BlockMover _mover;
+        
         private readonly List<Block> _blocks = new();
         private readonly List<Gate> _gates = new();
 
@@ -61,6 +67,14 @@ namespace ColorBlockJamClone.Core
             SpawnBlocks(data);
             SpawnGates(data);
 
+            _mover = new BlockMover(_grid);
+
+            if (_dragInput != null)
+                _dragInput.Initialize(_grid, _mover, _gates, OnBlockExited);
+
+            GameManager.Instance?.SetState(GameState.Start);
+            GameEvents.RaiseLevelLoaded(0);
+
             Debug.Log($"[GameplayBootstrapper] Built level '{data.name}' " +
                       $"({data.gridSize.x}x{data.gridSize.y}), " +
                       $"{_blocks.Count} blocks, {_gates.Count} gates.");
@@ -74,7 +88,9 @@ namespace ColorBlockJamClone.Core
                 {
                     var cell = _grid.GetCell(new Vector2Int(x, y));
                     var prefab = cell.IsBlocked ? _blockedCellPrefab : _floorCellPrefab;
-                    if (prefab == null) continue;
+
+                    if (prefab == null) 
+                        continue;
 
                     var go = Instantiate(prefab, _floorParent);
                     var target = _grid.GridToWorldCentered(new Vector2Int(x, y));
@@ -100,6 +116,7 @@ namespace ColorBlockJamClone.Core
                 var target = _grid.GridToWorldCentered(bp.gridPosition);
                 target.y = 1.5f; 
                 block.transform.position = target;
+                _grid.Occupy(block);
                 _blocks.Add(block);
             }
         }
@@ -113,6 +130,20 @@ namespace ColorBlockJamClone.Core
                 var gate = Instantiate(_gatePrefab, _gatesParent);
                 gate.Initialize(gp.color, gp.side, gp.positionAlongSide, gp.width, _palette, _grid);
                 _gates.Add(gate);
+            }
+        }
+
+        private void OnBlockExited(Block block)
+        {
+            _blocks.Remove(block);
+            int remaining = _blocks.Count;
+            GameEvents.RaiseBlockExited(remaining);
+
+            if (remaining == 0)
+            {
+                GameEvents.RaiseLevelCompleted();
+                GameManager.Instance?.SetState(GameState.Complete);
+                Debug.Log("[GameplayBootstrapper] Level Complete!");
             }
         }
     }

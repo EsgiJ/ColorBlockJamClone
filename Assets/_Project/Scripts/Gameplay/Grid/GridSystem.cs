@@ -41,7 +41,7 @@ namespace ColorBlockJamClone.Gameplay.Grid
                 Origin + new Vector3(gridPos.x * CellSize, 0f, gridPos.y * CellSize);
 
             public Vector3 GridToWorldCentered(Vector2Int gridPos) =>
-                GridToWorld(gridPos) + new Vector3(CellSize * 0.5f, 0f, CellSize * 0.5f);
+                GridToWorld(gridPos) + new Vector3(CellSize * 0.5f, 1.5f, CellSize * 0.5f);
 
             public Vector2Int WorldToGrid(Vector3 worldPos)
             {
@@ -50,6 +50,44 @@ namespace ColorBlockJamClone.Gameplay.Grid
                     Mathf.FloorToInt(local.x / CellSize),
                     Mathf.FloorToInt(local.z / CellSize)
                 );
+            }
+
+            public bool CanOccupy(IGridOccupant occupant, Vector2Int[] proposedCells)
+            {
+                foreach (var pos in proposedCells)
+                {
+                    if (!IsInBounds(pos)) 
+                        return false;
+
+                    var cell = _cells[pos.x, pos.y];
+
+                    if (cell.IsBlocked) 
+                        return false;
+                    
+                    if (cell.OccupiedBy != null && cell.OccupiedBy != occupant)     
+                        return false;
+                }
+                return true;
+            }
+
+            public void Occupy(IGridOccupant occupant)
+            {
+                foreach (var pos in occupant.GetOccupiedCells())
+                {
+                    var cell = GetCell(pos);
+                    if (cell != null) 
+                        cell.OccupiedBy = occupant;
+                }
+            }
+
+            public void Release(IGridOccupant occupant)
+            {
+                foreach (var pos in occupant.GetOccupiedCells())
+                {
+                    var cell = GetCell(pos);
+                    if (cell != null && cell.OccupiedBy == occupant) 
+                        cell.OccupiedBy = null;
+                }
             }
     }
 }
