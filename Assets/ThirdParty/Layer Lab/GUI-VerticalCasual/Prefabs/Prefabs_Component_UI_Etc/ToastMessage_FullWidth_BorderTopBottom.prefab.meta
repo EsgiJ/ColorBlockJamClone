@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 1e03e2631cc704bf7a4aa18a4f721f93
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 285661
+  packageName: GUI - Vertical Casual(+PSD)
+  packageVersion: 1.0.4
+  assetPath: Assets/Layer Lab/GUI-VerticalCasual/Prefabs/Prefabs_Component_UI_Etc/ToastMessage_FullWidth_BorderTopBottom.prefab
+  uploadId: 906824
