@@ -26,8 +26,8 @@ MonoBehaviour:
     rotationSteps: 3
   - shape: {fileID: 11400000, guid: 6e966b209c6f7304aafd2aa7e776a499, type: 2}
     color: 3
-    gridPosition: {x: 2, y: 1}
-    rotationSteps: 3
+    gridPosition: {x: 3, y: 4}
+    rotationSteps: 2
   gates:
   - color: 1
     side: 0

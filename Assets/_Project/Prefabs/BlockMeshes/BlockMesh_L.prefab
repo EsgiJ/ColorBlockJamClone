@@ -86,6 +86,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1709081240807396074, guid: 9bd4832cb241cb34ba4596f0de8cf1ec,
         type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1709081240807396074, guid: 9bd4832cb241cb34ba4596f0de8cf1ec,
+        type: 3}
       propertyPath: m_AABB.m_Center.x
       value: 0.5
       objectReference: {fileID: 0}
