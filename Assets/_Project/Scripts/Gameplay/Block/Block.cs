@@ -98,14 +98,13 @@ namespace ColorBlockJamClone.Gameplay.Block
         public void AnimateExit(Vector3 outwardDir, Action onComplete)
         {
             transform.DOKill();
-
             const float duration = 0.55f;
 
             Sequence seq = DOTween.Sequence();
             seq.Append(transform.DOMove(transform.position + outwardDir * (CellSize * 1.2f), duration)
                 .SetEase(Ease.InCubic));
-
             seq.Join(transform.DOScale(Vector3.zero, duration).SetEase(Ease.InCubic));
+            seq.OnComplete(() => onComplete?.Invoke());
         }
 
         public void ResetForReuse()
