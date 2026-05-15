@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using ColorBlockJamClone.Core;
+using ColorBlockJamClone.Data;
 using ColorBlockJamClone.Gameplay.Grid;
 using UnityEngine;
 
@@ -8,7 +9,6 @@ namespace ColorBlockJamClone.Gameplay.Input
     public class DragInputHandler : MonoBehaviour
     {
         [SerializeField] private Camera _camera;
-        [SerializeField] private int _maxLookahead = 12;
 
         private GridSystem _grid;
         private BlockMover _mover;
@@ -20,8 +20,8 @@ namespace ColorBlockJamClone.Gameplay.Input
         private Vector3 _dragStartBlockPos;
         private Vector2Int _dragStartGrid;
 
+        private Vector3 _currentBlockOffset;
         private bool _gameStarted;
-        private Vector2Int _currentSnap;
         private System.Action _onFirstInput;
 
         public void Initialize(
@@ -60,86 +60,119 @@ namespace ColorBlockJamClone.Gameplay.Input
         private void StartDrag()
         {
             var screenPos = UnityEngine.Input.mousePosition;
-            var ray = _camera.ScreenPointToRay(screenPos);
-            if (!Physics.Raycast(ray, out var hit, 100f)) return;
+                var ray = _camera.ScreenPointToRay(screenPos);
+                if (!Physics.Raycast(ray, out var hit, 100f)) return;
 
-            var block = hit.collider.GetComponentInParent<Block.Block>();
-            if (block == null) return;
+                var block = hit.collider.GetComponentInParent<Block.Block>();
+                if (block == null) return;
 
-            _dragging = block;
-            _dragStartGround = WorldOnGroundPlane(screenPos);
-            _dragStartBlockPos = block.transform.position;
-            _dragStartGrid = block.GridPosition;
-            _currentSnap = Vector2Int.zero;
+                _dragging = block;
+                _dragStartGround = WorldOnGroundPlane(screenPos);
+                _dragStartBlockPos = block.transform.position;
+                _dragStartGrid = block.GridPosition;
+                _currentBlockOffset = Vector3.zero;     
 
-            _grid.Release(block);
+                _grid.Release(block);
 
-            if (!_gameStarted)
-            {
-                _gameStarted = true;
-                _onFirstInput?.Invoke();
-            }
+                if (!_gameStarted)
+                {
+                    _gameStarted = true;
+                    _onFirstInput?.Invoke();   
+                }
 
-            _dragging.PlayPickup();
+                _dragging.PlayPickup();
         }
 
         private void UpdateDrag()
         {
             var currentGround = WorldOnGroundPlane(UnityEngine.Input.mousePosition);
-            var delta = currentGround - _dragStartGround;
+            Vector3 targetOffset = currentGround - _dragStartGround;
+            targetOffset.y = 0f;
 
-            float desiredCellsX = delta.x / _grid.CellSize;
-            float desiredCellsZ = delta.z / _grid.CellSize;
+            Vector3 diff = targetOffset - _currentBlockOffset;
+            float dist = diff.magnitude;
 
-            Vector2Int desiredSnap = new Vector2Int(
-                Mathf.RoundToInt(desiredCellsX),
-                Mathf.RoundToInt(desiredCellsZ)
-            );
-
-            int safety = 100;
-            while (_currentSnap != desiredSnap && safety-- > 0)
+            if (dist > 0.001f)
             {
-                Vector2Int remaining = desiredSnap - _currentSnap;
-                Vector2Int primary, secondary;
+                int subSteps = Mathf.Max(1, Mathf.CeilToInt(dist / (_grid.CellSize * 0.25f)));
+                Vector3 step = diff / subSteps;
 
-                if (Mathf.Abs(remaining.x) >= Mathf.Abs(remaining.y))
+                for (int i = 0; i < subSteps; i++)
                 {
-                    primary   = new Vector2Int(System.Math.Sign(remaining.x), 0);
-                    secondary = new Vector2Int(0, System.Math.Sign(remaining.y));
-                }
-                else
-                {
-                    primary   = new Vector2Int(0, System.Math.Sign(remaining.y));
-                    secondary = new Vector2Int(System.Math.Sign(remaining.x), 0);
-                }
+                    Vector3 trial = _currentBlockOffset + step;
+                    if (IsValidOffset(trial))
+                    {
+                        _currentBlockOffset = trial;
+                        continue;
+                    }
 
-                if (primary != Vector2Int.zero &&
-                    IsValidAt(_dragging, _dragStartGrid + _currentSnap + primary))
-                {
-                    _currentSnap += primary;
-                    continue;
+                    Vector3 trialX = _currentBlockOffset + new Vector3(step.x, 0f, 0f);
+                    if (Mathf.Abs(step.x) > 0.0001f && IsValidOffset(trialX))
+                    {
+                        _currentBlockOffset = trialX;
+                        continue;
+                    }
+
+                    Vector3 trialZ = _currentBlockOffset + new Vector3(0f, 0f, step.z);
+                    if (Mathf.Abs(step.z) > 0.0001f && IsValidOffset(trialZ))
+                    {
+                        _currentBlockOffset = trialZ;
+                        continue;
+                    }
+
+                    break;
                 }
-                if (secondary != Vector2Int.zero &&
-                    IsValidAt(_dragging, _dragStartGrid + _currentSnap + secondary))
-                {
-                    _currentSnap += secondary;
-                    continue;
-                }
-                break;
             }
 
-            float allowedX = Mathf.Clamp(desiredCellsX, _currentSnap.x - 0.5f, _currentSnap.x + 0.5f);
-            float allowedZ = Mathf.Clamp(desiredCellsZ, _currentSnap.y - 0.5f, _currentSnap.y + 0.5f);
+            _dragging.transform.position = _dragStartBlockPos + _currentBlockOffset;
+        }
 
-            Vector3 worldOffset = new Vector3(allowedX * _grid.CellSize, 0f, allowedZ * _grid.CellSize);
-            _dragging.transform.position = _dragStartBlockPos + worldOffset;
+        private bool IsValidOffset(Vector3 worldOffset)
+        {
+            float cellX = worldOffset.x / _grid.CellSize;
+            float cellZ = worldOffset.z / _grid.CellSize;
+
+            var offsets = _dragging.Shape.GetRotatedOffsets(_dragging.RotationSteps);
+
+            foreach (var off in offsets)
+            {
+                float cx = _dragStartGrid.x + off.x + 0.5f + cellX;
+                float cz = _dragStartGrid.y + off.y + 0.5f + cellZ;
+
+                int gxMin = Mathf.FloorToInt(cx - 0.5f + 0.001f);
+                int gxMax = Mathf.FloorToInt(cx + 0.5f - 0.001f);
+                int gzMin = Mathf.FloorToInt(cz - 0.5f + 0.001f);
+                int gzMax = Mathf.FloorToInt(cz + 0.5f - 0.001f);
+
+                for (int gx = gxMin; gx <= gxMax; gx++)
+                {
+                    for (int gz = gzMin; gz <= gzMax; gz++)
+                    {
+                        var pos = new Vector2Int(gx, gz);
+
+                        if (!_grid.IsInBounds(pos))
+                            return false;
+
+                        var cell = _grid.GetCell(pos);
+                        if (cell.IsBlocked)
+                            return false;
+                        if (cell.OccupiedBy != null && cell.OccupiedBy != _dragging as IGridOccupant)
+                            return false;
+                    }
+                }
+            }
+
+            return true;
         }
 
         private void EndDrag()
         {
-            Vector2Int newPos = _dragStartGrid + _currentSnap;
+            Vector2Int finalSnap = new Vector2Int(
+                Mathf.RoundToInt(_currentBlockOffset.x / _grid.CellSize),
+                Mathf.RoundToInt(_currentBlockOffset.z / _grid.CellSize)
+            );
+            Vector2Int newPos = _dragStartGrid + finalSnap;
 
-            // Safety (drag boyunca valid kalmış olmalı ama yine de kontrol et)
             if (!_grid.CanOccupy(_dragging, _dragging.GetCellsAt(newPos)))
                 newPos = _dragStartGrid;
 
@@ -162,29 +195,51 @@ namespace ColorBlockJamClone.Gameplay.Input
             }
 
             _dragging = null;
-            _currentSnap = Vector2Int.zero;
-        }
-
-        private bool IsValidAt(Block.Block block, Vector2Int gridPos)
-        {
-            return _grid.CanOccupy(block, block.GetCellsAt(gridPos));
+            _currentBlockOffset = Vector3.zero;
         }
 
         private Gate.Gate FindExitGate(Block.Block block)
         {
-            foreach (var cell in block.GetOccupiedCells())
+            foreach (var gate in _gates)
             {
-                foreach (var gate in _gates)
-                {
-                    if (gate.Color != block.Color) 
-                        continue;
+                if (gate.Color != block.Color) 
+                    continue;
 
-                    if (gate.CoversCell(cell, _grid.Width, _grid.Height)) 
-                        return gate;
+                var blockCells = block.GetOccupiedCells();
+                var edgeCells = new List<Vector2Int>();
+                foreach (var c in blockCells)
+                {
+                    if (IsCellOnGateEdge(c, gate.Side)) 
+                        edgeCells.Add(c);
                 }
+
+                if (edgeCells.Count == 0) 
+                    continue;
+
+                bool allCovered = true;
+                foreach (var c in edgeCells)
+                {
+                    if (!gate.CoversCell(c, _grid.Width, _grid.Height))
+                    {
+                        allCovered = false;
+                        break;
+                    }
+                }
+
+                if (allCovered) 
+                    return gate;
             }
             return null;
         }
+
+        private bool IsCellOnGateEdge(Vector2Int cell, GridSide side) => side switch
+        {
+            GridSide.Bottom => cell.y == 0,
+            GridSide.Top    => cell.y == _grid.Height - 1,
+            GridSide.Left   => cell.x == 0,
+            GridSide.Right  => cell.x == _grid.Width - 1,
+            _ => false
+        };
 
         private Vector3 WorldOnGroundPlane(Vector3 screenPos)
         {
