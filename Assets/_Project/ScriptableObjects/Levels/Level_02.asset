@@ -53,7 +53,7 @@ MonoBehaviour:
     positionAlongSide: 0
     width: 2
   - side: 2
-    positionAlongSide: 3
+    positionAlongSide: 4
     width: 2
   - side: 0
     positionAlongSide: 2
