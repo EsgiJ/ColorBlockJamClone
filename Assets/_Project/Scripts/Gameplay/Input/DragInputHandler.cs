@@ -22,19 +22,32 @@ namespace ColorBlockJamClone.Gameplay.Input
 
         private bool _gameStarted;
         private Vector2Int _currentSnap;
+        private System.Action _onFirstInput;
 
-        public void Initialize(GridSystem grid, BlockMover mover, IReadOnlyList<Gate.Gate> gates, System.Action<Block.Block> onBlockExited)
+        public void Initialize(
+            GridSystem grid, 
+            BlockMover mover, 
+            IReadOnlyList<Gate.Gate> gates, 
+            System.Action<Block.Block> onBlockExited, 
+            System.Action onFirstInput)
         {
             _grid = grid;
             _mover = mover;
             _gates = gates;
             _onBlockExited = onBlockExited;
+            _onFirstInput = onFirstInput;
             if (_camera == null) _camera = Camera.main;
+            _gameStarted = false;
         }
 
         private void Update()
         {
-            if (_grid == null) return;
+            if (_grid == null) 
+                return;
+
+            var state = GameManager.Instance?.State;
+            if (state != GameState.Start && state != GameState.Gameplay)
+                return;
 
             if (UnityEngine.Input.GetMouseButtonDown(0)) 
                 StartDrag();
@@ -178,6 +191,12 @@ namespace ColorBlockJamClone.Gameplay.Input
             var ray = _camera.ScreenPointToRay(screenPos);
             var plane = new Plane(Vector3.up, _grid.Origin);
             return plane.Raycast(ray, out float d) ? ray.GetPoint(d) : Vector3.zero;
+        }
+
+        public void ResetForNewLevel()
+        {
+            _gameStarted = false;
+            _dragging = null;
         }
     }
 }

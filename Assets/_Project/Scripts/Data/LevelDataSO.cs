@@ -29,7 +29,7 @@ namespace ColorBlockJamClone.Data
         public Vector2Int[] blockedCells;
 
         [Header("Time")]
-        [Min(5f)] public float time = 120f;
+        [Min(5f)] public float timeLimit = 120f;
 
         [Header("Blocks")]
         public BlockPlacement[] blocks;

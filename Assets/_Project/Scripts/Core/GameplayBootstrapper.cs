@@ -4,14 +4,15 @@ using ColorBlockJamClone.Gameplay.Block;
 using ColorBlockJamClone.Gameplay.Gate;
 using ColorBlockJamClone.Gameplay.Grid;
 using ColorBlockJamClone.Gameplay.Input;
+using ColorBlockJamClone.Gameplay.Timer;
 using UnityEngine;
 
 namespace ColorBlockJamClone.Core
 {
     public class GameplayBootstrapper : MonoBehaviour
     {
-        [Header("Level")]
-        [SerializeField] private LevelDataSO _levelToLoad;
+        [Header("Levels")]
+        [SerializeField] private LevelDataSO[] _levels;
 
         [Header("Shared Assets")]
         [SerializeField] private ColorPaletteSO _palette;
@@ -35,52 +36,91 @@ namespace ColorBlockJamClone.Core
         // Runtime state
         private GridSystem _grid;
         private BlockMover _mover;
+        private Timer _timer;
+        private MonoPool<Block> _blockPool;
         
-        private readonly List<Block> _blocks = new();
-        private readonly List<Gate> _gates = new();
+        private readonly List<Block> _activeBlocks = new();
+        private readonly List<Gate> _activeGates = new();
+        private readonly List<GameObject> _activeFloor = new();
+
 
         public GridSystem Grid => _grid;
-        public IReadOnlyList<Block> Blocks => _blocks;
-        public IReadOnlyList<Gate> Gates => _gates;
+        public IReadOnlyList<Block> Blocks => _activeBlocks;
+        public IReadOnlyList<Gate> Gates => _activeGates;
+        public int CurrentLevelIndex { get; private set; }
+        public float CurrentLevelDuration => _levels[CurrentLevelIndex].timeLimit;
+
+        private void Awake()
+        {
+            _blockPool = new MonoPool<Block>(_blockPrefab, _blocksParent, prewarm: 16);
+            _timer = new Timer(0f);
+            _timer.OnExpired += HandleTimerExpired;
+        }
 
         private void Start()
         {
-            if (_levelToLoad == null)
-            {
-                Debug.LogError("[GameplayBootstrapper] No level assigned.");
-                return;
-            }
-            BuildLevel(_levelToLoad);
+            LoadLevel(0);
         }
+
+        private void Update()
+        {
+            _timer?.Tick(Time.deltaTime);
+            if (_timer != null && _timer.IsRunning)
+                GameEvents.RaiseTimerTick(_timer.Remaining);
+        }
+
+        public void LoadLevel(int index)
+        {
+            ClearLevel();
+            CurrentLevelIndex = Mathf.Clamp(index, 0, _levels.Length - 1);
+            var data = _levels[CurrentLevelIndex];
+            BuildLevel(data);
+            _dragInput.ResetForNewLevel();
+        }
+
+        public void RestartLevel() => LoadLevel(CurrentLevelIndex);
+        public void NextLevel() => LoadLevel((CurrentLevelIndex + 1) % _levels.Length);
 
         private void BuildLevel(LevelDataSO data)
         {
-            _grid = new GridSystem(
-                data.gridSize.x,
-                data.gridSize.y,
-                _cellSize,
-                _gridOrigin.position,
-                data.blockedCells
-            );
+            _grid = new GridSystem(data.gridSize.x, data.gridSize.y, _cellSize, _gridOrigin.position, data.blockedCells);
 
-            BuildFloorVisual(data);
+            BuildFloorVisual();
             SpawnBlocks(data);
             SpawnGates(data);
 
             _mover = new BlockMover(_grid);
+            _dragInput.Initialize(_grid, _mover, _activeGates, OnBlockExited, OnFirstInput);
 
-            if (_dragInput != null)
-                _dragInput.Initialize(_grid, _mover, _gates, OnBlockExited);
+            _timer.Reset(data.timeLimit);
 
             GameManager.Instance?.SetState(GameState.Start);
-            GameEvents.RaiseLevelLoaded(0);
+            GameEvents.RaiseLevelLoaded(CurrentLevelIndex);
 
-            Debug.Log($"[GameplayBootstrapper] Built level '{data.name}' " +
-                      $"({data.gridSize.x}x{data.gridSize.y}), " +
-                      $"{_blocks.Count} blocks, {_gates.Count} gates.");
+            Debug.Log($"[GameplayBootstrapper] Level '{data.name}' ready " + $"({data.gridSize.x}x{data.gridSize.y}, {_activeBlocks.Count} blocks).");
         }
 
-        private void BuildFloorVisual(LevelDataSO data)
+        private void ClearLevel()
+        {
+            foreach (var b in _activeBlocks)
+            {
+                b.ResetForReuse();
+                _blockPool.Release(b);
+            }
+            _activeBlocks.Clear();
+
+            foreach (var g in _activeGates) 
+                Destroy(g.gameObject);
+            _activeGates.Clear();
+
+            foreach (var f in _activeFloor) 
+                Destroy(f);
+            _activeFloor.Clear();
+
+            _timer?.Pause();
+        }
+
+        private void BuildFloorVisual()
         {
             for (int x = 0; x < _grid.Width; x++)
             {
@@ -111,13 +151,16 @@ namespace ColorBlockJamClone.Core
                 if (bp.shape == null) 
                     continue;
 
-                var block = Instantiate(_blockPrefab, _blocksParent);
+                var block = _blockPool.Get();
+                block.transform.SetParent(_blocksParent);
                 block.Initialize(bp.shape, bp.color, bp.gridPosition, bp.rotationSteps, _palette, _cellSize);
+
                 var target = _grid.GridToWorldCentered(bp.gridPosition);
                 target.y = 1.5f; 
                 block.transform.position = target;
+
                 _grid.Occupy(block);
-                _blocks.Add(block);
+                _activeBlocks.Add(block);
             }
         }
 
@@ -125,25 +168,53 @@ namespace ColorBlockJamClone.Core
         {
             if (data.gates == null) 
                 return;
+
             foreach (var gp in data.gates)
             {
                 var gate = Instantiate(_gatePrefab, _gatesParent);
                 gate.Initialize(gp.color, gp.side, gp.positionAlongSide, gp.width, _palette, _grid);
-                _gates.Add(gate);
+                _activeGates.Add(gate);
+            }
+        }
+
+        private void OnFirstInput()
+        {
+            if (GameManager.Instance != null && GameManager.Instance.State == GameState.Start)
+            {
+                GameManager.Instance.SetState(GameState.Gameplay);
+                _timer.Start();
+                GameEvents.RaiseLevelStarted();
             }
         }
 
         private void OnBlockExited(Block block)
         {
-            _blocks.Remove(block);
-            int remaining = _blocks.Count;
-            GameEvents.RaiseBlockExited(remaining);
+            if (!_activeBlocks.Contains(block)) 
+                return;
 
-            if (remaining == 0)
+            _activeBlocks.Remove(block);
+            block.ResetForReuse();
+            _blockPool.Release(block);
+
+            GameEvents.RaiseBlockExited(_activeBlocks.Count);
+
+            if (_activeBlocks.Count == 0 &&
+                GameManager.Instance != null &&
+                GameManager.Instance.State == GameState.Gameplay)
             {
+                _timer.Pause();
+                GameManager.Instance.SetState(GameState.Complete);
                 GameEvents.RaiseLevelCompleted();
-                GameManager.Instance?.SetState(GameState.Complete);
-                Debug.Log("[GameplayBootstrapper] Level Complete!");
+            }
+        }
+
+        private void HandleTimerExpired()
+        {
+            if (GameManager.Instance != null &&
+                GameManager.Instance.State == GameState.Gameplay)
+            {
+                GameManager.Instance.SetState(GameState.GameOver);
+                GameEvents.RaiseLevelFailed();
             }
         }
     }
