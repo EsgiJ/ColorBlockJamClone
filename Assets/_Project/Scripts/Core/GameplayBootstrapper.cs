@@ -36,6 +36,9 @@ namespace ColorBlockJamClone.Core
         [Header("Input")]
         [SerializeField] private DragInputHandler _dragInput;
 
+        [Header("Feedback")]
+        [SerializeField] private FeedbackConfigSO _feedback;
+
         // Runtime state
         private GridSystem _grid;
         private BlockMover _mover;
@@ -171,7 +174,7 @@ namespace ColorBlockJamClone.Core
 
                 var block = _blockPool.Get();
                 block.transform.SetParent(_blocksParent);
-                block.Initialize(bp.shape, bp.color, bp.gridPosition, bp.rotationSteps, _palette, _cellSize);
+                block.Initialize(bp.shape, bp.color, bp.gridPosition, bp.rotationSteps, _palette, _feedback,_cellSize);
 
                 var target = _grid.GridToWorldCentered(bp.gridPosition);
                 target.y = 1.5f; 

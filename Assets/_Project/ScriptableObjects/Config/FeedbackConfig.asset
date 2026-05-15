@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30014757d366716449d718e6e696caad, type: 3}
+  m_Name: FeedbackConfig
+  m_EditorClassIdentifier: 
+  blockPickupScale: 1.08
+  blockPickupDuration: 0.15
+  blockPickupEase: 27
+  blockLiftHeight: 0.6
+  blockFloatAmplitude: 0.08
+  blockFloatPeriod: 0.7
+  blockSnapDuration: 0.22
+  blockSnapEase: 27
+  buttonPressScale: 0.9
+  buttonPressDuration: 0.08
+  buttonPressEase: 6
+  timerWarningThreshold: 10
+  timerNormalColor: {r: 1, g: 1, b: 1, a: 1}
+  timerWarningColor: {r: 1, g: 0.35, b: 0.35, a: 1}
+  timerPulseScale: 1.15
+  timerPulsePeriod: 0.55

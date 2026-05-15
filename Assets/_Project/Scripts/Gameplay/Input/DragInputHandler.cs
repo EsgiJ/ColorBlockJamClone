@@ -81,6 +81,7 @@ namespace ColorBlockJamClone.Gameplay.Input
                 }
 
                 _dragging.PlayPickup();
+                AudioManager.Instance?.PlayBlockGrab();
         }
 
         private void UpdateDrag()
@@ -184,6 +185,9 @@ namespace ColorBlockJamClone.Gameplay.Input
             {
                 _grid.Release(_dragging);
                 var exitedBlock = _dragging;
+
+                AudioManager.Instance?.PlayBlockExit();
+                
                 _dragging.AnimateExit(
                     exitGate.OutwardWorldDirection,
                     () => _onBlockExited?.Invoke(exitedBlock)
@@ -192,6 +196,7 @@ namespace ColorBlockJamClone.Gameplay.Input
             else
             {
                 _dragging.PlaySnap();
+                AudioManager.Instance?.PlayBlockSnap();
             }
 
             _dragging = null;

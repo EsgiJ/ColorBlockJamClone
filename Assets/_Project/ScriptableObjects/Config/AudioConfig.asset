@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f06b0f17b8a1a74bb8083835c7ba029, type: 3}
+  m_Name: AudioConfig
+  m_EditorClassIdentifier: 
+  backgroundMusic: {fileID: 8300000, guid: bea93a38b71b64b598109b3a3b1a0048, type: 3}
+  musicVolume: 0.4
+  buttonClick: {fileID: 8300000, guid: 81652031b64c342cc8dbc59c138d77c5, type: 3}
+  blockGrab: {fileID: 8300000, guid: ffb159a21c8a04135a5616979c828fab, type: 3}
+  blockSnap: {fileID: 8300000, guid: 29bde6326b4c34ad8a12da475f79b50a, type: 3}
+  blockExit: {fileID: 8300000, guid: 79180f511d89441b9aa23ccae1992fe0, type: 3}
+  levelComplete: {fileID: 8300000, guid: 2667a0a008b044e218b63df62e2be749, type: 3}
+  levelFail: {fileID: 8300000, guid: 4b4dd7245f6104c8c8eb07ccf6b386ed, type: 3}
+  sfxVolume: 0.85
+  pitchVariance: 0.08
