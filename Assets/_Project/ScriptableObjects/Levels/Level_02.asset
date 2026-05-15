@@ -45,3 +45,22 @@ MonoBehaviour:
     side: 1
     positionAlongSide: 3
     width: 2
+  walls:
+  - side: 1
+    positionAlongSide: 0
+    width: 3
+  - side: 2
+    positionAlongSide: 0
+    width: 2
+  - side: 2
+    positionAlongSide: 3
+    width: 2
+  - side: 0
+    positionAlongSide: 2
+    width: 3
+  - side: 3
+    positionAlongSide: 0
+    width: 2
+  - side: 3
+    positionAlongSide: 4
+    width: 2

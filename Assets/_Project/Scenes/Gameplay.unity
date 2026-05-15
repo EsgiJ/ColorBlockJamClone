@@ -1152,6 +1152,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 507508168}
   m_CullTransparentMesh: 1
+--- !u!1 &532463974
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 532463975}
+  m_Layer: 0
+  m_Name: Walls
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &532463975
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 532463974}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 737777315}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &560770881
 GameObject:
   m_ObjectHideFlags: 0
@@ -1584,6 +1615,7 @@ Transform:
   - {fileID: 1598361765}
   - {fileID: 261329682}
   - {fileID: 58778214}
+  - {fileID: 532463975}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &790543799
@@ -2805,13 +2837,16 @@ MonoBehaviour:
     type: 3}
   _gatePrefab: {fileID: 4775950983722054212, guid: 3cb37b4243644c0429d560e486a51927,
     type: 3}
+  _wallPrefab: {fileID: 8800209580886748, guid: e2b9ab24e366ba24faea82b6076bd198,
+    type: 3}
   _floorCellPrefab: {fileID: 719928230518148122, guid: 34a7424a488683e4a8db498efcc8fc2f,
     type: 3}
-  _blockedCellPrefab: {fileID: 6996234768547946960, guid: 12c517013ac967f46ac07aaef1b1c6fa,
+  _blockedCellPrefab: {fileID: 620188336450228624, guid: d4eb653857001784689263c798360800,
     type: 3}
   _floorParent: {fileID: 1598361765}
   _blocksParent: {fileID: 261329682}
   _gatesParent: {fileID: 58778214}
+  _wallParent: {fileID: 532463975}
   _dragInput: {fileID: 1201317069}
 --- !u!4 &1381152417
 Transform:

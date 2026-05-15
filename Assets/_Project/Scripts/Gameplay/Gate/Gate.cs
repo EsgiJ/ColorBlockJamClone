@@ -7,7 +7,8 @@ namespace ColorBlockJamClone.Gameplay.Gate
     public class Gate : MonoBehaviour
     {
         [SerializeField] private Renderer _renderer;
-
+        [SerializeField] private Transform _gateMesh;
+        
         public BlockColor Color { get; private set; }
         public GridSide Side { get; private set; }
         public int PositionAlongSide { get; private set; }
@@ -42,22 +43,22 @@ namespace ColorBlockJamClone.Gameplay.Gate
             {
                 case GridSide.Bottom:
                     pos = grid.GridToWorldCentered(new Vector2Int(PositionAlongSide, 0))
-                          + new Vector3((Width - 1) * cellSize * 0.5f, 0f, -cellSize);
+                          + new Vector3((Width - 1) * cellSize * 0.5f, 0f, -cellSize * 0.75f);
                     yRot = 0f;
                     break;
                 case GridSide.Top:
                     pos = grid.GridToWorldCentered(new Vector2Int(PositionAlongSide, grid.Height - 1))
-                          + new Vector3((Width - 1) * cellSize * 0.5f, 0f, cellSize);
+                          + new Vector3((Width - 1) * cellSize * 0.5f, 0f, cellSize * 0.75f);
                     yRot = 180f;
                     break;
                 case GridSide.Left:
                     pos = grid.GridToWorldCentered(new Vector2Int(0, PositionAlongSide))
-                          + new Vector3(-cellSize, 0f, (Width - 1) * cellSize * 0.5f);
+                          + new Vector3(-cellSize * 0.75f, 0f, (Width - 1) * cellSize * 0.5f);
                     yRot = 90f;
                     break;
                 case GridSide.Right:
                     pos = grid.GridToWorldCentered(new Vector2Int(grid.Width - 1, PositionAlongSide))
-                          + new Vector3(cellSize, 0f, (Width - 1) * cellSize * 0.5f);
+                          + new Vector3(cellSize * 0.75f, 0f, (Width - 1) * cellSize * 0.5f);
                     yRot = -90f;
                     break;
                 default:
@@ -66,9 +67,9 @@ namespace ColorBlockJamClone.Gameplay.Gate
             }
 
             pos.y = transform.position.y; 
-            transform.position = pos;
+            transform.localPosition = pos;
             transform.rotation = Quaternion.Euler(0f, yRot, 0f);
-            transform.localScale = new Vector3(Width * cellSize, cellSize * 0.4f, cellSize * 0.5f);
+            _gateMesh.localScale = new Vector3(Width * cellSize, cellSize * 1f, cellSize * 0.5f);
         }
 
         public bool CoversCell(Vector2Int cell, int gridWidth, int gridHeight)
