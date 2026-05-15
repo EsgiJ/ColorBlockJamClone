@@ -83,7 +83,14 @@ namespace ColorBlockJamClone.Core
 
         private void BuildLevel(LevelDataSO data)
         {
-            _grid = new GridSystem(data.gridSize.x, data.gridSize.y, _cellSize, _gridOrigin.position, data.blockedCells);
+            
+            Vector3 centeredOrigin = _gridOrigin.position - new Vector3(
+                data.gridSize.x * _cellSize * 0.5f,
+                0f,
+                data.gridSize.y * _cellSize * 0.5f
+            );
+
+            _grid = new GridSystem(data.gridSize.x, data.gridSize.y, _cellSize, centeredOrigin, data.blockedCells);
 
             BuildFloorVisual();
             SpawnBlocks(data);
@@ -137,6 +144,7 @@ namespace ColorBlockJamClone.Core
                     target.y = go.transform.position.y; 
                     go.transform.position = target;
                     go.name = $"Cell_{x}_{y}{(cell.IsBlocked ? "_Blocked" : "")}";
+                    _activeFloor.Add(go);
                 }
             }
         }
