@@ -21,6 +21,14 @@ namespace ColorBlockJamClone.Data
         [Range(1, 4)] public int width;
     }
 
+    [Serializable]
+    public struct WallPlacement
+    {
+        public GridSide side;
+        public int positionAlongSide;
+        [Range(1, 4)] public int width;
+    }
+
     [CreateAssetMenu(fileName = "Level_", menuName = "ColorBlockJamClone/Level Data")]
     public class LevelDataSO : ScriptableObject
     {
@@ -36,5 +44,8 @@ namespace ColorBlockJamClone.Data
 
         [Header("Gates")]
         public GatePlacement[] gates;
+
+        [Header("Walls")]
+        public WallPlacement[] walls;
     }
 }

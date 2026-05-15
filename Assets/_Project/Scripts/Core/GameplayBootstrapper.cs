@@ -5,6 +5,7 @@ using ColorBlockJamClone.Gameplay.Gate;
 using ColorBlockJamClone.Gameplay.Grid;
 using ColorBlockJamClone.Gameplay.Input;
 using ColorBlockJamClone.Gameplay.Timer;
+using ColorBlockJamClone.Gameplay.Wall;
 using UnityEngine;
 
 namespace ColorBlockJamClone.Core
@@ -22,6 +23,7 @@ namespace ColorBlockJamClone.Core
         [Header("Prefabs")]
         [SerializeField] private Block _blockPrefab;
         [SerializeField] private Gate _gatePrefab;
+        [SerializeField] private Wall _wallPrefab;
         [SerializeField] private GameObject _floorCellPrefab;
         [SerializeField] private GameObject _blockedCellPrefab;
 
@@ -29,6 +31,7 @@ namespace ColorBlockJamClone.Core
         [SerializeField] private Transform _floorParent;
         [SerializeField] private Transform _blocksParent;
         [SerializeField] private Transform _gatesParent;
+        [SerializeField] private Transform _wallParent;
 
         [Header("Input")]
         [SerializeField] private DragInputHandler _dragInput;
@@ -41,12 +44,14 @@ namespace ColorBlockJamClone.Core
         
         private readonly List<Block> _activeBlocks = new();
         private readonly List<Gate> _activeGates = new();
+        private readonly List<Wall> _activeWalls = new();
         private readonly List<GameObject> _activeFloor = new();
 
 
         public GridSystem Grid => _grid;
         public IReadOnlyList<Block> Blocks => _activeBlocks;
         public IReadOnlyList<Gate> Gates => _activeGates;
+        public IReadOnlyList<Wall> Wall => _activeWalls;
         public int CurrentLevelIndex { get; private set; }
         public float CurrentLevelDuration => _levels[CurrentLevelIndex].timeLimit;
 
@@ -95,6 +100,7 @@ namespace ColorBlockJamClone.Core
             BuildFloorVisual();
             SpawnBlocks(data);
             SpawnGates(data);
+            SpawnWalls(data);
 
             _mover = new BlockMover(_grid);
             _dragInput.Initialize(_grid, _mover, _activeGates, OnBlockExited, OnFirstInput);
@@ -123,6 +129,10 @@ namespace ColorBlockJamClone.Core
             foreach (var f in _activeFloor) 
                 Destroy(f);
             _activeFloor.Clear();
+
+            foreach (var g in _activeWalls) 
+                Destroy(g.gameObject);
+            _activeWalls.Clear();
 
             _timer?.Pause();
         }
@@ -185,6 +195,19 @@ namespace ColorBlockJamClone.Core
             }
         }
 
+        private void SpawnWalls(LevelDataSO data)
+        {
+            if (data.walls == null) 
+                return;
+
+            foreach (var w in data.walls)
+            {
+                var wall = Instantiate(_wallPrefab, _wallParent);
+                wall.Initialize(w.side, w.positionAlongSide, w.width, _grid);
+                _activeWalls.Add(wall);
+            }
+        }
+        
         private void OnFirstInput()
         {
             if (GameManager.Instance != null && GameManager.Instance.State == GameState.Start)
