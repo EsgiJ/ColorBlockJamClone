@@ -77,7 +77,7 @@ namespace ColorBlockJamClone.Gameplay.Input
             if (!_gameStarted)
             {
                 _gameStarted = true;
-                GameEvents.RaiseLevelStarted();
+                _onFirstInput?.Invoke();
             }
 
             _dragging.PlayPickup();
