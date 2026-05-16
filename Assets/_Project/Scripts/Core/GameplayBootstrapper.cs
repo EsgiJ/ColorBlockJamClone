@@ -60,7 +60,7 @@ namespace ColorBlockJamClone.Core
 
         private void Awake()
         {
-            _blockPool = new MonoPool<Block>(_blockPrefab, _blocksParent, prewarm: 16);
+            _blockPool = new MonoPool<Block>(_blockPrefab, _blocksParent, prewarm: 32);
             _timer = new Timer(0f);
             _timer.OnExpired += HandleTimerExpired;
         }
