@@ -140,7 +140,7 @@ namespace ColorBlockJamClone.Editor
 
             var size = EditorGUILayout.Vector2IntField("Grid Size(W x H)", _level.gridSize);
             size.x = Mathf.Clamp(size.x, 3, 12);
-            size.x = Mathf.Clamp(size.y, 3, 14);
+            size.y = Mathf.Clamp(size.y, 3, 14);
             _level.gridSize = size;
 
             var timeLimit = EditorGUILayout.FloatField("Time Limit(sec)", _level.timeLimit);
@@ -195,7 +195,7 @@ namespace ColorBlockJamClone.Editor
                     break;
 
                 case Tool.Erase: 
-                    EditorGUILayout.HelpBox("Click a cell to toggle blocked.", MessageType.None);
+                    EditorGUILayout.HelpBox("Click anything to erase it.", MessageType.None);
                     break;
 
                 case Tool.Gate:
@@ -311,6 +311,12 @@ namespace ColorBlockJamClone.Editor
             
             GUI.Label(rect, label, new GUIStyle(EditorStyles.boldLabel)
                 { alignment = TextAnchor.MiddleCenter });
+
+            if (Event.current.type == EventType.MouseDown && rect.Contains(Event.current.mousePosition))
+            { 
+                HandleCellClick(pos); 
+                Event.current.Use(); 
+            }
         }
 
         private void DrawEdgeSlot(Rect total, GridSide side, int posAlongSide)
@@ -328,6 +334,12 @@ namespace ColorBlockJamClone.Editor
 
             EditorGUI.DrawRect(rect, background);
             DrawBorder(rect, new Color(0, 0, 0, 0.6f));
+
+            if (Event.current.type == EventType.MouseDown && rect.Contains(Event.current.mousePosition))
+            { 
+                HandleEdgeClick(side, posAlongSide); 
+                Event.current.Use();
+            }
         }
 
         private Rect EdgeRect(Rect total, GridSide side, int pos)
@@ -390,6 +402,169 @@ namespace ColorBlockJamClone.Editor
             EditorGUILayout.EndHorizontal();
         }
 
+        private void HandleCellClick(Vector2Int p)
+        {
+            switch (_currentTool)
+            {
+                case Tool.Block: PlaceBlock(p); break;
+                case Tool.BlockedCell: ToggleBlocked(p); break;
+                case Tool.Erase: EraseCell(p); break;
+            }
+        }
+
+        private void HandleEdgeClick(GridSide side, int p)
+        {
+            switch (_currentTool)
+            {
+                case Tool.Gate: PlaceGate(side, p); break;
+                case Tool.Wall: PlaceWall(side, p); break;
+                case Tool.Erase: EraseEdge(side, p); break;
+            }
+        }
+
+        private void PlaceBlock(Vector2Int p)
+        {
+            if (_blockShape == null) 
+            { 
+                Debug.LogWarning("[LevelEditor] No shape selected");
+                return; 
+            }
+
+            foreach (var o in _blockShape.GetRotatedOffsets(_blockRotation))
+            {
+                var c = p + o;
+                if (c.x < 0 || c.x >= _level.gridSize.x || c.y < 0 || c.y >= _level.gridSize.y)
+                { 
+                    Debug.LogWarning($"[LevelEditor] Block out of bounds at {c}"); 
+                    return; 
+                }
+                if (FindBlockAt(c).HasValue)
+                { 
+                    Debug.LogWarning($"[LevelEditor] Cell {c} already occupied"); 
+                    return; 
+                }
+            }
+
+            Undo.RecordObject(_level, "Place Block");
+            _level.blocks = (_level.blocks ?? new BlockPlacement[0]).Append(new BlockPlacement
+            {
+                shape = _blockShape, color = _blockColor,
+                gridPosition = p, rotationSteps = _blockRotation
+            }).ToArray();
+            MarkDirty();
+        }
+
+        private void ToggleBlocked(Vector2Int p)
+        {
+            Undo.RecordObject(_level, "Toggle Blocked");
+            var list = (_level.blockedCells ?? new Vector2Int[0]).ToList();
+            int idx = list.IndexOf(p);
+
+            if (idx >= 0) 
+                list.RemoveAt(idx);    
+            else   
+                list.Add(p);
+
+            _level.blockedCells = list.ToArray();
+            MarkDirty();
+        }
+        
+        private void PlaceGate(GridSide side, int p)
+        {
+            int max = (side == GridSide.Top || side == GridSide.Bottom) ? _level.gridSize.x : _level.gridSize.y;
+            if (p + _gateWidth > max) 
+            { 
+                Debug.LogWarning("[LevelEditor] Gate exceeds edge"); 
+                return; 
+            }
+
+            Undo.RecordObject(_level, "Place Gate");
+            _level.gates = (_level.gates ?? new GatePlacement[0]).Append(new GatePlacement
+            {
+                color = _gateColor, side = side,
+                positionAlongSide = p, width = _gateWidth
+            }).ToArray();
+            MarkDirty();
+        }
+
+        private void PlaceWall(GridSide side, int p)
+        {
+            int max = (side == GridSide.Top || side == GridSide.Bottom) ? _level.gridSize.x : _level.gridSize.y;
+            if (p + _wallWidth > max) 
+            { 
+                Debug.LogWarning("[LevelEditor] Wall exceeds edge"); 
+                return; 
+            }
+
+            Undo.RecordObject(_level, "Place Wall");
+            _level.walls = (_level.walls ?? new WallPlacement[0]).Append(new WallPlacement
+            {
+                side = side, positionAlongSide = p, width = _wallWidth
+            }).ToArray();
+            MarkDirty();
+        }
+
+        private void EraseCell(Vector2Int p)
+        {
+            Undo.RecordObject(_level, "Erase Cell");
+            bool changed = false;
+
+            if (_level.blockedCells != null)
+            {
+                int i = System.Array.IndexOf(_level.blockedCells, p);
+                if (i >= 0)
+                {
+                    var l = _level.blockedCells.ToList(); 
+                    l.RemoveAt(i);
+                    _level.blockedCells = l.ToArray(); changed = true;
+                }
+            }
+
+            if (_level.blocks != null)
+            {
+                var newList = _level.blocks.Where(b =>
+                {
+                    if (b.shape == null) return true;
+                    foreach (var o in b.shape.GetRotatedOffsets(b.rotationSteps))
+                    {
+                        if (b.gridPosition + o == p) 
+                            return false;
+                    }
+                    return true;
+                }).ToArray();
+                if (newList.Length != _level.blocks.Length) changed = true;
+                _level.blocks = newList;
+            }
+
+            if (changed) MarkDirty();
+        }
+
+        private void EraseEdge(GridSide side, int p)
+        {
+            Undo.RecordObject(_level, "Erase Edge");
+            bool changed = false;
+
+            if (_level.gates != null)
+            {
+                var ng = _level.gates.Where(g => !(g.side == side &&
+                    p >= g.positionAlongSide && p < g.positionAlongSide + g.width)).ToArray();
+
+                if (ng.Length != _level.gates.Length) 
+                    changed = true;
+                _level.gates = ng;
+            }
+            if (_level.walls != null)
+            {
+                var nw = _level.walls.Where(w => !(w.side == side &&
+                    p >= w.positionAlongSide && p < w.positionAlongSide + w.width)).ToArray();
+                
+                if (nw.Length != _level.walls.Length) 
+                    changed = true;
+                _level.walls = nw;
+            }
+            if (changed) MarkDirty();
+        }
+
         // To ensure save the level if we make any change on it
         private void MarkDirty()
         {
@@ -397,6 +572,7 @@ namespace ColorBlockJamClone.Editor
                 return;
 
             EditorUtility.SetDirty(_level);   
+            Repaint();
         }
 
         private BlockPlacement? FindBlockAt(Vector2Int pos)
