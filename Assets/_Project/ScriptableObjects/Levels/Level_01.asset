@@ -13,7 +13,9 @@ MonoBehaviour:
   m_Name: Level_01
   m_EditorClassIdentifier: 
   gridSize: {x: 5, y: 6}
-  blockedCells: []
+  blockedCells:
+  - {x: 2, y: 2}
+  - {x: 2, y: 3}
   timeLimit: 120
   blocks:
   - shape: {fileID: 11400000, guid: d6713c2ecfe85ee41869eacf9df3c73f, type: 2}

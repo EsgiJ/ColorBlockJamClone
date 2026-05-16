@@ -3000,7 +3000,7 @@ MonoBehaviour:
     type: 3}
   _floorCellPrefab: {fileID: 719928230518148122, guid: 34a7424a488683e4a8db498efcc8fc2f,
     type: 3}
-  _blockedCellPrefab: {fileID: 620188336450228624, guid: d4eb653857001784689263c798360800,
+  _blockedCellPrefab: {fileID: 6996234768547946960, guid: 7abb608310ad02145bda439e309097fa,
     type: 3}
   _floorParent: {fileID: 1598361765}
   _blocksParent: {fileID: 261329682}

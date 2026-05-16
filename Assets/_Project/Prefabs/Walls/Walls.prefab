@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1403340779349306048}
-  - component: {fileID: 1407758316569371479}
   - component: {fileID: 8800209580886748}
   m_Layer: 0
   m_Name: Walls
@@ -34,14 +33,6 @@ Transform:
   - {fileID: 7596043750309868054}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 180, y: 0, z: 0}
---- !u!33 &1407758316569371479
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2278748713605040083}
-  m_Mesh: {fileID: -3262789968867269347, guid: d0d2dc496b9a6fd42bf60eab2512a89d, type: 3}
 --- !u!114 &8800209580886748
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -108,7 +99,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 0798f62f4fcc27946a46313486ff2462, type: 2}
+  - {fileID: 2100000, guid: dac1eb856a5ec7d4bb609d0253f57f78, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

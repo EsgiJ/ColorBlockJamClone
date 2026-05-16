@@ -6,7 +6,7 @@ namespace ColorBlockJamClone.Gameplay.Grid
     {
         public Vector2Int Position { get; }
         public bool IsBlocked { get; set; }
-        public IGridOccupant OccupiedBy { get; set; } // Occupied will be implemented later
+        public IGridOccupant OccupiedBy { get; set; }
 
         public bool IsFree => !IsBlocked && OccupiedBy == null;
 
