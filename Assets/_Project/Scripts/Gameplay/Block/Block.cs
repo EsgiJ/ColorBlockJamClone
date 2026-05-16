@@ -63,7 +63,7 @@ namespace ColorBlockJamClone.Gameplay.Block
                     centroid.x * CellSize, 0f, centroid.y * CellSize
                 );
                 _visualInstance.transform.localRotation =
-                    Quaternion.Euler(0f, -RotationSteps * 90f, 0f) * _visualInstance.transform.localRotation;
+                    Quaternion.Euler(0f, RotationSteps * 90f, 0f) * _visualInstance.transform.localRotation;
 
                 _visualBaseLocalPos = _visualInstance.transform.localPosition;
 
