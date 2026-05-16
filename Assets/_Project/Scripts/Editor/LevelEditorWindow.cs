@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using ColorBlockJamClone.Data;
+using ColorBlockJamClone.Gameplay.Wall;
 using log4net.Core;
 using PlasticPipe.PlasticProtocol.Messages;
 using UnityEditor;
@@ -14,6 +15,8 @@ namespace ColorBlockJamClone.Editor
     public class LevelEditorWindow : EditorWindow
     {
         private LevelDataSO _level;
+
+        private Vector2 _scrollPos;
 
         private const float CELL = 36f;
         private const float EDGE = 24f;
@@ -45,7 +48,13 @@ namespace ColorBlockJamClone.Editor
             DrawSettings();
             EditorGUILayout.Space(8);
 
+            _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
             DrawGrid();
+            EditorGUILayout.EndScrollView();
+            EditorGUILayout.Space(8);
+            
+            DrawStats();
+            DrawActions();
         }
         
         private void DrawHeader()
@@ -186,6 +195,39 @@ namespace ColorBlockJamClone.Editor
             EditorGUI.DrawRect(new Rect(r.x, r.y, 1, r.height), c);
             EditorGUI.DrawRect(new Rect(r.x + r.width - 1, r.y, 1, r.height), c);
             EditorGUI.DrawRect(new Rect(r.x, r.y + r.height - 1, r.width, 1), c);
+        }
+
+        private void DrawStats()
+        {
+            int blockCount = _level.blocks?.Length ?? 0;
+            int gateCount = _level.gates?.Length ?? 0;
+            int wallCount = _level.walls?.Length ?? 0;
+            int blockedCellCount = _level.blockedCells?.Length ?? 0;
+
+            EditorGUILayout.LabelField($"Blocks: {blockCount} | Gates: {gateCount} | Walls: {wallCount} | Blocked Cells: {blockedCellCount}",EditorStyles.miniLabel);
+        }
+        
+        private void DrawActions()
+        {
+            EditorGUILayout.BeginHorizontal();
+            if(GUILayout.Button("Save", GUILayout.Height(30)))
+            {
+                AssetDatabase.SaveAssets();
+                Debug.Log($"[LevelEditorWindow] Saved {_level.name}");
+            }
+            if(GUILayout.Button("Clear All", GUILayout.Height(30)))
+            {
+                if(EditorUtility.DisplayDialog("Clear All", "Are you sure you want to delete all blocks/walls/gates/blocked cells?", "Yes", "Cancel"))
+                {
+                    Undo.RecordObject(_level, "Clear All");
+                    _level.blocks = new BlockPlacement[0];
+                    _level.gates = new GatePlacement[0];
+                    _level.walls = new WallPlacement[0];
+                    _level.blockedCells= new Vector2Int[0];
+                    MarkDirty();
+                }
+            }
+            EditorGUILayout.EndHorizontal();
         }
 
         // To ensure save the level if we make any change on it
