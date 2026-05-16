@@ -186,6 +186,8 @@ namespace ColorBlockJamClone.Gameplay.Input
                 _grid.Release(_dragging);
                 var exitedBlock = _dragging;
 
+                exitGate.PlayOpen(0.55f);
+                
                 AudioManager.Instance?.PlayBlockExit();
                 
                 _dragging.AnimateExit(

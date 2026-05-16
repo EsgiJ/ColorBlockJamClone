@@ -2,12 +2,15 @@ using System;
 using ColorBlockJamClone.Data;
 using ColorBlockJamClone.Gameplay.Grid;
 using DG.Tweening;
+using UnityEditor;
 using UnityEngine;
 
 namespace ColorBlockJamClone.Gameplay.Block
 {
     public class Block : MonoBehaviour, IGridOccupant
     {
+        [SerializeField] private GameObject _exitParticlesPrefab;
+
         public BlockShapeSO Shape { get; private set; }
         public BlockColor Color { get; private set; }
         public Vector2Int GridPosition { get; private set; }
@@ -146,11 +149,41 @@ namespace ColorBlockJamClone.Gameplay.Block
                 _visualInstance.transform.DOKill();
 
             const float duration = 0.55f;
+            const float exitDistanceInCells = 3f;     
+            const float descendAmount = 1.5f;         
+
+            SpawnExitParticles(outwardDir);
+
+            Vector3 targetPos = transform.position
+                + outwardDir * (CellSize * exitDistanceInCells)
+                + Vector3.down * descendAmount;
+
             Sequence seq = DOTween.Sequence();
-            seq.Append(transform.DOMove(transform.position + outwardDir * (CellSize * 1.2f), duration)
-                .SetEase(Ease.InCubic));
-            seq.Join(transform.DOScale(Vector3.zero, duration).SetEase(Ease.InCubic));
+            seq.Append(transform.DOMove(targetPos, duration).SetEase(Ease.InQuad));
             seq.OnComplete(() => onComplete?.Invoke());
+        }
+
+        private void SpawnExitParticles(Vector3 outwardDir)
+        {
+            if (_exitParticlesPrefab == null) 
+                return;
+
+            var particles = Instantiate(
+                _exitParticlesPrefab,
+                transform.position,
+                Quaternion.LookRotation(outwardDir));
+
+            if (ColorPalette != null)
+            {
+                var ps = particles.GetComponent<ParticleSystem>();
+                if (ps != null)
+                {
+                    var main = ps.main;
+                    main.startColor = ColorPalette.GetColor(Color);
+                }
+            }
+
+            Destroy(particles, 2f);  
         }
 
         public void ResetForReuse()

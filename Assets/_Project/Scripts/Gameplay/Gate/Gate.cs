@@ -1,5 +1,6 @@
 using ColorBlockJamClone.Data;
 using ColorBlockJamClone.Gameplay.Grid;
+using DG.Tweening;
 using UnityEngine;
 
 namespace ColorBlockJamClone.Gameplay.Gate
@@ -9,6 +10,8 @@ namespace ColorBlockJamClone.Gameplay.Gate
         [SerializeField] private Renderer _renderer;
         [SerializeField] private Transform _gateMesh;
         
+        private float _originalY;
+
         public BlockColor Color { get; private set; }
         public GridSide Side { get; private set; }
         public int PositionAlongSide { get; private set; }
@@ -70,6 +73,8 @@ namespace ColorBlockJamClone.Gameplay.Gate
             transform.localPosition = pos;
             transform.rotation = Quaternion.Euler(0f, yRot, 0f);
             _gateMesh.localScale = new Vector3(Width * cellSize, cellSize * 1f, cellSize * 0.5f);
+
+            _originalY = transform.position.y;
         }
 
         public bool CoversCell(Vector2Int cell, int gridWidth, int gridHeight)
@@ -86,6 +91,19 @@ namespace ColorBlockJamClone.Gameplay.Gate
                     return cell.x == gridWidth - 1 && cell.y >= PositionAlongSide && cell.y < PositionAlongSide + Width;
             }
             return false;
+        }
+
+        public void PlayOpen(float blockExitDuration)
+        {
+            transform.DOKill();
+
+            Sequence seq = DOTween.Sequence();
+
+            seq.Append(transform.DOMoveY(_originalY - 1.5f, 0.2f).SetEase(Ease.OutQuad));
+
+            seq.AppendInterval(blockExitDuration);
+
+            seq.Append(transform.DOMoveY(_originalY, 0.3f).SetEase(Ease.OutBack));
         }
 
         public Vector3 OutwardWorldDirection => Side switch
