@@ -213,27 +213,32 @@ namespace ColorBlockJamClone.Gameplay.Input
                     continue;
 
                 var blockCells = block.GetOccupiedCells();
-                var edgeCells = new List<Vector2Int>();
+
+                bool touchesEdge = false;
                 foreach (var c in blockCells)
                 {
-                    if (IsCellOnGateEdge(c, gate.Side)) 
-                        edgeCells.Add(c);
+                    if (IsCellOnGateEdge(c, gate.Side))
+                    {
+                        touchesEdge = true;
+                        break;
+                    }
                 }
-
-                if (edgeCells.Count == 0) 
+                if (!touchesEdge) 
                     continue;
 
-                bool allCovered = true;
-                foreach (var c in edgeCells)
+                bool allFit = true;
+                foreach (var c in blockCells)
                 {
-                    if (!gate.CoversCell(c, _grid.Width, _grid.Height))
+                    int pos = (gate.Side == GridSide.Top || gate.Side == GridSide.Bottom) ? c.x : c.y;
+                    
+                    if (pos < gate.PositionAlongSide || pos >= gate.PositionAlongSide + gate.Width)
                     {
-                        allCovered = false;
+                        allFit = false;
                         break;
                     }
                 }
 
-                if (allCovered) 
+                if (allFit) 
                     return gate;
             }
             return null;
