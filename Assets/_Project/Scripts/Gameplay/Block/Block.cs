@@ -148,18 +148,29 @@ namespace ColorBlockJamClone.Gameplay.Block
             if (_visualInstance != null) 
                 _visualInstance.transform.DOKill();
 
-            const float duration = 0.55f;
-            const float exitDistanceInCells = 3f;     
-            const float descendAmount = 1.5f;         
-
             SpawnExitParticles(outwardDir);
 
-            Vector3 targetPos = transform.position
-                + outwardDir * (CellSize * exitDistanceInCells)
-                + Vector3.down * descendAmount;
+            const float duration = 0.55f;
+            const float exitDistanceInCells = 3f;
+            const float visualHideAt = 0.4f;  
+            Vector3 targetPos = transform.position + outwardDir * (CellSize * exitDistanceInCells);
 
             Sequence seq = DOTween.Sequence();
             seq.Append(transform.DOMove(targetPos, duration).SetEase(Ease.InQuad));
+
+            if (_visualInstance != null)
+            {
+                seq.Join(_visualInstance.transform
+                    .DOLocalMove(_visualBaseLocalPos, duration)
+                    .SetEase(Ease.InQuad));
+
+                seq.InsertCallback(duration * visualHideAt, () =>
+                {
+                    if (_visualInstance != null) 
+                        _visualInstance.SetActive(false);
+                });
+            }
+
             seq.OnComplete(() => onComplete?.Invoke());
         }
 
@@ -195,6 +206,7 @@ namespace ColorBlockJamClone.Gameplay.Block
             {
                 _visualInstance.transform.DOKill();
                 _visualInstance.transform.localPosition = _visualBaseLocalPos;
+                _visualInstance.SetActive(true);
             }
         }
     }
