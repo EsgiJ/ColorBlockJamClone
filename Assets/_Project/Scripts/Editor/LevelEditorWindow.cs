@@ -1,22 +1,32 @@
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
+using System.Linq;
 using ColorBlockJamClone.Data;
+using ColorBlockJamClone.Gameplay.Gate;
 using ColorBlockJamClone.Gameplay.Wall;
-using log4net.Core;
-using PlasticPipe.PlasticProtocol.Messages;
 using UnityEditor;
-using UnityEditor.Rendering.LookDev;
-using UnityEditor.UIElements;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 namespace ColorBlockJamClone.Editor
 {
     public class LevelEditorWindow : EditorWindow
     {
-        private LevelDataSO _level;
+        private enum Tool {None, Block, BlockedCell, Gate, Wall, Erase }
 
+        private LevelDataSO _level;
+        private Tool _currentTool;
         private Vector2 _scrollPos;
+
+        // Block tool params
+        private BlockShapeSO _blockShape;
+        private BlockColor _blockColor = BlockColor.Red;
+        private int _blockRotation = 0;
+        private BlockShapeSO[] _availableShapes;
+
+        // Gate / Wall tool params
+        private GameObject _gatePrefab;
+        private GameObject _wallPrefab;
+        private BlockColor _gateColor = BlockColor.Red;
+        private int _gateWidth = 1;
+        private int _wallWidth = 1;
 
         private const float CELL = 36f;
         private const float EDGE = 24f;
@@ -33,6 +43,41 @@ namespace ColorBlockJamClone.Editor
             window.titleContent = new GUIContent("Level Editor");
             window.minSize = new Vector2(800, 600);
         }
+        
+        private void OnEnable()
+        {
+            RefreshAvailableShapes();
+            FindPrefabs();
+        }
+
+        private void FindPrefabs()
+        {
+            _gatePrefab = FindFirstPrefabWithComponent<Gate>();
+            _wallPrefab = FindFirstPrefabWithComponent<Wall>();
+        }
+
+        private static GameObject FindFirstPrefabWithComponent<T>() where T : Component
+        {
+            var guids = AssetDatabase.FindAssets("t:Prefab");
+            foreach (var guid in guids)
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var go = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                if (go != null && go.GetComponent<T>() != null)
+                    return go;
+            }
+            return null;
+        }
+
+        private void RefreshAvailableShapes()
+        {
+            _availableShapes = AssetDatabase.FindAssets("t:BlockShapeSO")
+                .Select(g => AssetDatabase.LoadAssetAtPath<BlockShapeSO>(AssetDatabase.GUIDToAssetPath(g)))
+                .Where(s => s != null)
+                .ToArray();
+            if (_blockShape == null && _availableShapes.Length > 0)
+                _blockShape = _availableShapes[0];
+        }
 
         private void OnGUI()
         {
@@ -47,6 +92,9 @@ namespace ColorBlockJamClone.Editor
 
             DrawSettings();
             EditorGUILayout.Space(8);
+
+            DrawToolPalette();
+            DrawToolOptions();
 
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
             DrawGrid();
@@ -92,7 +140,7 @@ namespace ColorBlockJamClone.Editor
 
             var size = EditorGUILayout.Vector2IntField("Grid Size(W x H)", _level.gridSize);
             size.x = Mathf.Clamp(size.x, 3, 12);
-            size.x = Mathf.Clamp(size.x, 3, 14);
+            size.x = Mathf.Clamp(size.y, 3, 14);
             _level.gridSize = size;
 
             var timeLimit = EditorGUILayout.FloatField("Time Limit(sec)", _level.timeLimit);
@@ -100,6 +148,112 @@ namespace ColorBlockJamClone.Editor
 
             if(EditorGUI.EndChangeCheck())
                 MarkDirty();
+        }
+
+        private void DrawToolPalette()
+        {
+            EditorGUILayout.LabelField("Tool", EditorStyles.boldLabel);
+            EditorGUILayout.BeginHorizontal();
+            foreach(Tool tool in System.Enum.GetValues(typeof(Tool)))
+            {
+                bool was = _currentTool == tool;
+                bool now = GUILayout.Toggle(was, tool.ToString(), "Button");
+
+                if(now && !was)
+                    _currentTool = tool;
+            }
+            EditorGUILayout.EndHorizontal();
+        }
+
+        private void DrawToolOptions()
+        {
+            switch(_currentTool)
+            {
+                case Tool.Block:
+                    EditorGUILayout.BeginHorizontal();
+
+                    EditorGUILayout.BeginVertical();
+
+                    string[] shapeNames = _availableShapes.Select(s => s != null ? s.name : "(null)").ToArray();
+                    int index = System.Array.IndexOf(_availableShapes, _blockShape);
+                    index = EditorGUILayout.Popup("Shape", Mathf.Max(0, index), shapeNames);
+
+                    if(index >= 0 && index < _availableShapes.Length)
+                        _blockShape = _availableShapes[index];
+                    
+                    _blockColor = (BlockColor)EditorGUILayout.EnumPopup("Color", _blockColor);
+                    _blockRotation = EditorGUILayout.IntSlider("Rotation", _blockRotation, 0, 3);
+
+                    EditorGUILayout.EndVertical();
+
+                    DrawPreview(_blockShape.VisualPrefab);
+                    
+                    EditorGUILayout.EndHorizontal();
+                    break;
+                case Tool.BlockedCell:
+                    EditorGUILayout.HelpBox("Click a cell to toggle blocked.", MessageType.None);
+                    break;
+
+                case Tool.Erase: 
+                    EditorGUILayout.HelpBox("Click a cell to toggle blocked.", MessageType.None);
+                    break;
+
+                case Tool.Gate:
+                    EditorGUILayout.BeginHorizontal();
+
+                    EditorGUILayout.BeginVertical();
+                    
+                    _gateColor = (BlockColor)EditorGUILayout.EnumPopup("Color", _gateColor);
+                    _gateWidth = EditorGUILayout.IntSlider("Width", _gateWidth, 1, 4);
+                    EditorGUILayout.LabelField("Click the edges around the grid");
+            
+                    EditorGUILayout.EndVertical();
+
+                    DrawPreview(_gatePrefab);
+
+                    EditorGUILayout.EndHorizontal();
+                    break;
+
+                case Tool.Wall:
+                    EditorGUILayout.BeginHorizontal();
+
+                    EditorGUILayout.BeginVertical();
+                    
+                    _wallWidth = EditorGUILayout.IntSlider("Width", _wallWidth, 1, 4);
+                    EditorGUILayout.LabelField("Click the edges around the grid");
+            
+                    EditorGUILayout.EndVertical();
+
+                    DrawPreview(_wallPrefab);
+
+                    EditorGUILayout.EndHorizontal();
+                    break;
+            }
+        }
+
+        private void DrawPreview(GameObject obj)
+        {
+            Rect r = GUILayoutUtility.GetRect(48, 48, GUILayout.Width(48), GUILayout.Height(48));
+
+            if (obj == null)
+            {
+                EditorGUI.DrawRect(r, Color.gray);
+                return;
+            }
+
+            Texture2D preview = AssetPreview.GetAssetPreview(obj);
+
+            if (preview == null)
+            {
+                if (AssetPreview.IsLoadingAssetPreview(obj.GetInstanceID()))
+                    Repaint();
+                preview = AssetPreview.GetMiniThumbnail(obj);
+            }
+
+            if (preview != null)
+                GUI.DrawTexture(r, preview, ScaleMode.ScaleToFit);
+            else
+                EditorGUI.DrawRect(r, Color.gray);
         }
 
         private void DrawGrid()
@@ -214,6 +368,12 @@ namespace ColorBlockJamClone.Editor
             {
                 AssetDatabase.SaveAssets();
                 Debug.Log($"[LevelEditorWindow] Saved {_level.name}");
+            }
+            if (GUILayout.Button("Refresh Shapes", GUILayout.Height(26)))
+            {
+                RefreshAvailableShapes();
+                FindPrefabs();
+                Debug.Log($"[LevelEditorWindow] Shapes refreshed");
             }
             if(GUILayout.Button("Clear All", GUILayout.Height(30)))
             {
