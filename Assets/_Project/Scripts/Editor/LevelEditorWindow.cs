@@ -1,6 +1,9 @@
+using System.Threading.Tasks;
 using ColorBlockJamClone.Data;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace ColorBlockJamClone.Editor
 {
@@ -19,6 +22,13 @@ namespace ColorBlockJamClone.Editor
         private void OnGUI()
         {
             DrawHeader();
+
+            if(_level == null)
+            {
+                EditorGUILayout.HelpBox("Select an existing LevelDataSO or create a new one.", MessageType.Info);
+            }
+
+            DrawSettings();
         }
         
         private void DrawHeader()
@@ -47,6 +57,32 @@ namespace ColorBlockJamClone.Editor
             AssetDatabase.CreateAsset(newLevel, path);
             AssetDatabase.SaveAssets();
             _level = newLevel;
+        }
+
+        private void DrawSettings()
+        {
+            EditorGUILayout.LabelField("Settings", EditorStyles.boldLabel);
+            EditorGUI.BeginChangeCheck();
+
+            var size = EditorGUILayout.Vector2IntField("Grid Size(W x H)", _level.gridSize);
+            size.x = Mathf.Clamp(size.x, 3, 12);
+            size.x = Mathf.Clamp(size.x, 3, 14);
+            _level.gridSize = size;
+
+            var timeLimit = EditorGUILayout.FloatField("Time Limit(sec)", _level.timeLimit);
+            _level.timeLimit = Mathf.Max(5f, timeLimit);
+
+            if(EditorGUI.EndChangeCheck())
+                MarkDirty();
+        }
+
+        // To ensure save the level if we make any change on it
+        private void MarkDirty()
+        {
+            if(_level == null)
+                return;
+
+            EditorUtility.SetDirty(_level);   
         }
     } 
 }
