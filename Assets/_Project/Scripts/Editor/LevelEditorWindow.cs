@@ -630,6 +630,7 @@ namespace ColorBlockJamClone.Editor
             BlockColor.Yellow => Color.yellow,
             BlockColor.Purple => new Color(0.65f, 0.30f, 0.85f),
             BlockColor.Orange => new Color(1.00f, 0.55f, 0.10f),
+            BlockColor.Pink   => new Color(1.00f, 0.55f, 0.63f),
             _ => Color.gray
         };
     } 
