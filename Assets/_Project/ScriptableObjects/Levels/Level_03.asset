@@ -1,0 +1,78 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7ae6ad62e7af24408350f18cde34053, type: 3}
+  m_Name: Level_03
+  m_EditorClassIdentifier: 
+  gridSize: {x: 5, y: 6}
+  blockedCells: []
+  timeLimit: 150
+  blocks:
+  - shape: {fileID: 11400000, guid: fa586b6fa8107844db4d6e16d8ac77a3, type: 2}
+    color: 1
+    gridPosition: {x: 2, y: 3}
+    rotationSteps: 3
+  - shape: {fileID: 11400000, guid: 1993f4e4e401e7f48a35abaf6697b7c5, type: 2}
+    color: 2
+    gridPosition: {x: 0, y: 2}
+    rotationSteps: 0
+  - shape: {fileID: 11400000, guid: 1993f4e4e401e7f48a35abaf6697b7c5, type: 2}
+    color: 6
+    gridPosition: {x: 3, y: 2}
+    rotationSteps: 0
+  - shape: {fileID: 11400000, guid: fa586b6fa8107844db4d6e16d8ac77a3, type: 2}
+    color: 4
+    gridPosition: {x: 1, y: 1}
+    rotationSteps: 0
+  - shape: {fileID: 11400000, guid: fa586b6fa8107844db4d6e16d8ac77a3, type: 2}
+    color: 0
+    gridPosition: {x: 1, y: 0}
+    rotationSteps: 0
+  gates:
+  - color: 2
+    side: 0
+    positionAlongSide: 3
+    width: 2
+  - color: 4
+    side: 2
+    positionAlongSide: 0
+    width: 2
+  - color: 0
+    side: 3
+    positionAlongSide: 0
+    width: 2
+  - color: 6
+    side: 0
+    positionAlongSide: 0
+    width: 2
+  - color: 1
+    side: 1
+    positionAlongSide: 1
+    width: 3
+  walls:
+  - side: 0
+    positionAlongSide: 2
+    width: 1
+  - side: 3
+    positionAlongSide: 2
+    width: 4
+  - side: 2
+    positionAlongSide: 2
+    width: 4
+  - side: 1
+    positionAlongSide: 4
+    width: 1
+  - side: 1
+    positionAlongSide: 0
+    width: 1
+  - side: 0
+    positionAlongSide: 2
+    width: 1

@@ -18,10 +18,6 @@ MonoBehaviour:
   - {x: 2, y: 3}
   timeLimit: 60
   blocks:
-  - shape: {fileID: 11400000, guid: d6713c2ecfe85ee41869eacf9df3c73f, type: 2}
-    color: 4
-    gridPosition: {x: 2, y: 4}
-    rotationSteps: 3
   - shape: {fileID: 11400000, guid: 1993f4e4e401e7f48a35abaf6697b7c5, type: 2}
     color: 1
     gridPosition: {x: 0, y: 0}
@@ -30,6 +26,10 @@ MonoBehaviour:
     color: 3
     gridPosition: {x: 3, y: 1}
     rotationSteps: 0
+  - shape: {fileID: 11400000, guid: d6713c2ecfe85ee41869eacf9df3c73f, type: 2}
+    color: 4
+    gridPosition: {x: 2, y: 5}
+    rotationSteps: 1
   gates:
   - color: 3
     side: 0
