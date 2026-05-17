@@ -627,7 +627,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60
+  field of view: 30
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -654,7 +654,7 @@ Transform:
   m_GameObject: {fileID: 272516104}
   serializedVersion: 2
   m_LocalRotation: {x: 0.6427876, y: 0, z: 0, w: 0.7660445}
-  m_LocalPosition: {x: -2, y: 37.36, z: -14.33}
+  m_LocalPosition: {x: -2, y: 80, z: -20}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2993,6 +2993,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6df58ce5f0b665f47b9cd36955918f83, type: 2}
   - {fileID: 11400000, guid: 8f8efdad51a865942b4d3c59f595a5b6, type: 2}
   - {fileID: 11400000, guid: 905cc64eb43331841acf186434eeb623, type: 2}
+  - {fileID: 11400000, guid: 20f35f6bf3c5a4e4c8c328d0f76da35b, type: 2}
+  - {fileID: 11400000, guid: 1efeade38b23d9d4692a4b2398f3fd15, type: 2}
   _palette: {fileID: 11400000, guid: 88e532deb5cef38438c1988e8b0d8d4a, type: 2}
   _cellSize: 2
   _gridOrigin: {fileID: 322313046}
