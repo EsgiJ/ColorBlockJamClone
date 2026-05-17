@@ -191,6 +191,7 @@ namespace ColorBlockJamClone.Gameplay.Input
                 AudioManager.Instance?.PlayBlockExit();
                 
                 _dragging.AnimateExit(
+                    exitGate.transform.position,
                     exitGate.OutwardWorldDirection,
                     () => _onBlockExited?.Invoke(exitedBlock)
                 );

@@ -141,14 +141,14 @@ namespace ColorBlockJamClone.Gameplay.Block
             }
         }
 
-        public void AnimateExit(Vector3 outwardDir, Action onComplete)
+        public void AnimateExit(Vector3 spawnPos, Vector3 outwardDir, Action onComplete)
         {
             transform.DOKill();
             _floatTween?.Kill();
             if (_visualInstance != null) 
                 _visualInstance.transform.DOKill();
 
-            SpawnExitParticles(outwardDir);
+            SpawnExitParticles(spawnPos, outwardDir);
 
             const float duration = 0.55f;
             const float exitDistanceInCells = 3f;
@@ -174,14 +174,14 @@ namespace ColorBlockJamClone.Gameplay.Block
             seq.OnComplete(() => onComplete?.Invoke());
         }
 
-        private void SpawnExitParticles(Vector3 outwardDir)
+        private void SpawnExitParticles(Vector3 spawnPos, Vector3 outwardDir)
         {
             if (_exitParticlesPrefab == null) 
                 return;
 
             var particles = Instantiate(
                 _exitParticlesPrefab,
-                transform.position,
+                spawnPos,
                 Quaternion.LookRotation(outwardDir));
 
             if (ColorPalette != null)
