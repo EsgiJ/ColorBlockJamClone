@@ -94,11 +94,25 @@ namespace ColorBlockJamClone.Gameplay.Input
 
             Vector3 newOffset = _currentBlockOffset;
 
-            Vector3 xTarget = new Vector3(desiredOffset.x, 0f, newOffset.z);
-            newOffset = FindFurthestValid(newOffset, xTarget);
+            float dx = Mathf.Abs(desiredOffset.x - newOffset.x);
+            float dz = Mathf.Abs(desiredOffset.z - newOffset.z);
 
-            Vector3 zTarget = new Vector3(newOffset.x, 0f, desiredOffset.z);
-            newOffset = FindFurthestValid(newOffset, zTarget);
+            if (dx >= dz)
+            {
+                Vector3 xTarget = new Vector3(desiredOffset.x, 0f, newOffset.z);
+                newOffset = FindFurthestValid(newOffset, xTarget);
+
+                Vector3 zTarget = new Vector3(newOffset.x, 0f, desiredOffset.z);
+                newOffset = FindFurthestValid(newOffset, zTarget);
+            }
+            else
+            {
+                Vector3 zTarget = new Vector3(newOffset.x, 0f, desiredOffset.z);
+                newOffset = FindFurthestValid(newOffset, zTarget);
+
+                Vector3 xTarget = new Vector3(desiredOffset.x, 0f, newOffset.z);
+                newOffset = FindFurthestValid(newOffset, xTarget);
+            }
 
             _currentBlockOffset = newOffset;
             _dragging.transform.position = _dragStartBlockPos + _currentBlockOffset;
@@ -270,7 +284,8 @@ namespace ColorBlockJamClone.Gameplay.Input
         private Vector3 WorldOnGroundPlane(Vector3 screenPos)
         {
             var ray = _camera.ScreenPointToRay(screenPos);
-            var plane = new Plane(Vector3.up, _grid.Origin);
+            float planeY = _dragging != null ? _dragging.transform.position.y : 1.5f;
+            var plane = new Plane(Vector3.up, new Vector3(0f, planeY, 0f));
             return plane.Raycast(ray, out float d) ? ray.GetPoint(d) : Vector3.zero;
         }
 

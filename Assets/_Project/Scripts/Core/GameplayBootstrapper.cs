@@ -24,7 +24,6 @@ namespace ColorBlockJamClone.Core
         [SerializeField] private Block _blockPrefab;
         [SerializeField] private Gate _gatePrefab;
         [SerializeField] private Wall _wallPrefab;
-        [SerializeField] private GameObject _floorCellPrefab;
         [SerializeField] private GameObject _blockedCellPrefab;
 
         [Header("Parent References in Scene")]
