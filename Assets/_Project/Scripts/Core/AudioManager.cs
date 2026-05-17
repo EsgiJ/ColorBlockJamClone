@@ -16,7 +16,6 @@ namespace ColorBlockJamClone.Core
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            ServiceLocator.Register(this);
         }
 
         private void Start()

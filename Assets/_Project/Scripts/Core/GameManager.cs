@@ -26,8 +26,6 @@ namespace ColorBlockJamClone.Core
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            ServiceLocator.Register(this);
-
             SceneManager.LoadScene(_gameplaySceneName, LoadSceneMode.Single);
 
             Debug.Log("[GameManager] Bootstrap complete.");
@@ -38,7 +36,6 @@ namespace ColorBlockJamClone.Core
             if (Instance != this)
                 return;
 
-            ServiceLocator.Clear();
             Instance = null;
         }
 
