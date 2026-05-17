@@ -139,8 +139,8 @@ namespace ColorBlockJamClone.Editor
             EditorGUI.BeginChangeCheck();
 
             var size = EditorGUILayout.Vector2IntField("Grid Size(W x H)", _level.gridSize);
-            size.x = Mathf.Clamp(size.x, 3, 12);
-            size.y = Mathf.Clamp(size.y, 3, 14);
+            size.x = Mathf.Clamp(size.x, 3, 8);
+            size.y = Mathf.Clamp(size.y, 3, 10);
             _level.gridSize = size;
 
             var timeLimit = EditorGUILayout.FloatField("Time Limit(sec)", _level.timeLimit);
@@ -204,7 +204,7 @@ namespace ColorBlockJamClone.Editor
                     EditorGUILayout.BeginVertical();
                     
                     _gateColor = (BlockColor)EditorGUILayout.EnumPopup("Color", _gateColor);
-                    _gateWidth = EditorGUILayout.IntSlider("Width", _gateWidth, 1, 4);
+                    _gateWidth = EditorGUILayout.IntSlider("Width", _gateWidth, 1, 10);
                     EditorGUILayout.LabelField("Click the edges around the grid");
             
                     EditorGUILayout.EndVertical();
@@ -219,7 +219,7 @@ namespace ColorBlockJamClone.Editor
 
                     EditorGUILayout.BeginVertical();
                     
-                    _wallWidth = EditorGUILayout.IntSlider("Width", _wallWidth, 1, 4);
+                    _wallWidth = EditorGUILayout.IntSlider("Width", _wallWidth, 1, 10);
                     EditorGUILayout.LabelField("Click the edges around the grid");
             
                     EditorGUILayout.EndVertical();
