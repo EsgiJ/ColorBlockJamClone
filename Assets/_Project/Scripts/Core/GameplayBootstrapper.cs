@@ -36,6 +36,9 @@ namespace ColorBlockJamClone.Core
         [Header("Floor")]
         [SerializeField] private Renderer _floorRenderer;
 
+        [Header("Camera")]
+        [SerializeField] private CameraController _cameraController;
+
         [Header("Input")]
         [SerializeField] private DragInputHandler _dragInput;
 
@@ -122,6 +125,8 @@ namespace ColorBlockJamClone.Core
 
             _mover = new BlockMover(_grid);
             _dragInput.Initialize(_grid, _mover, _activeGates, OnBlockExited, OnFirstInput);
+
+            _cameraController?.FrameGrid(data.gridSize.x, data.gridSize.y, _cellSize);
 
             _timer.Reset(data.timeLimit);
 
