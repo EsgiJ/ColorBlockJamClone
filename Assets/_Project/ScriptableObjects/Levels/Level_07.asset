@@ -1,0 +1,126 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7ae6ad62e7af24408350f18cde34053, type: 3}
+  m_Name: Level_07
+  m_EditorClassIdentifier: 
+  gridSize: {x: 7, y: 9}
+  blockedCells:
+  - {x: 0, y: 3}
+  - {x: 0, y: 4}
+  - {x: 0, y: 5}
+  - {x: 6, y: 3}
+  - {x: 6, y: 4}
+  - {x: 6, y: 5}
+  timeLimit: 120
+  blocks:
+  - shape: {fileID: 11400000, guid: 1993f4e4e401e7f48a35abaf6697b7c5, type: 2}
+    color: 3
+    gridPosition: {x: 0, y: 7}
+    rotationSteps: 0
+  - shape: {fileID: 11400000, guid: 1993f4e4e401e7f48a35abaf6697b7c5, type: 2}
+    color: 3
+    gridPosition: {x: 0, y: 0}
+    rotationSteps: 0
+  - shape: {fileID: 11400000, guid: 1993f4e4e401e7f48a35abaf6697b7c5, type: 2}
+    color: 6
+    gridPosition: {x: 5, y: 0}
+    rotationSteps: 0
+  - shape: {fileID: 11400000, guid: d5681ca4f2059f84785693b88aca20da, type: 2}
+    color: 1
+    gridPosition: {x: 3, y: 1}
+    rotationSteps: 0
+  - shape: {fileID: 11400000, guid: 0285c06f49002f9418bb28ac4d38b074, type: 2}
+    color: 0
+    gridPosition: {x: 5, y: 2}
+    rotationSteps: 0
+  - shape: {fileID: 11400000, guid: d6713c2ecfe85ee41869eacf9df3c73f, type: 2}
+    color: 0
+    gridPosition: {x: 1, y: 5}
+    rotationSteps: 1
+  - shape: {fileID: 11400000, guid: 1993f4e4e401e7f48a35abaf6697b7c5, type: 2}
+    color: 2
+    gridPosition: {x: 5, y: 7}
+    rotationSteps: 0
+  - shape: {fileID: 11400000, guid: d6713c2ecfe85ee41869eacf9df3c73f, type: 2}
+    color: 2
+    gridPosition: {x: 3, y: 8}
+    rotationSteps: 1
+  - shape: {fileID: 11400000, guid: d6713c2ecfe85ee41869eacf9df3c73f, type: 2}
+    color: 0
+    gridPosition: {x: 2, y: 8}
+    rotationSteps: 1
+  - shape: {fileID: 11400000, guid: d6713c2ecfe85ee41869eacf9df3c73f, type: 2}
+    color: 5
+    gridPosition: {x: 4, y: 8}
+    rotationSteps: 1
+  - shape: {fileID: 11400000, guid: d6713c2ecfe85ee41869eacf9df3c73f, type: 2}
+    color: 5
+    gridPosition: {x: 4, y: 5}
+    rotationSteps: 1
+  - shape: {fileID: 11400000, guid: d6713c2ecfe85ee41869eacf9df3c73f, type: 2}
+    color: 3
+    gridPosition: {x: 5, y: 5}
+    rotationSteps: 1
+  - shape: {fileID: 11400000, guid: 0285c06f49002f9418bb28ac4d38b074, type: 2}
+    color: 3
+    gridPosition: {x: 5, y: 6}
+    rotationSteps: 1
+  - shape: {fileID: 11400000, guid: 0285c06f49002f9418bb28ac4d38b074, type: 2}
+    color: 6
+    gridPosition: {x: 1, y: 6}
+    rotationSteps: 1
+  - shape: {fileID: 11400000, guid: d5681ca4f2059f84785693b88aca20da, type: 2}
+    color: 2
+    gridPosition: {x: 3, y: 6}
+    rotationSteps: 2
+  - shape: {fileID: 11400000, guid: 0285c06f49002f9418bb28ac4d38b074, type: 2}
+    color: 5
+    gridPosition: {x: 2, y: 5}
+    rotationSteps: 0
+  gates:
+  - color: 6
+    side: 0
+    positionAlongSide: 0
+    width: 2
+  - color: 1
+    side: 0
+    positionAlongSide: 2
+    width: 3
+  - color: 3
+    side: 0
+    positionAlongSide: 5
+    width: 2
+  - color: 0
+    side: 1
+    positionAlongSide: 0
+    width: 1
+  - color: 2
+    side: 1
+    positionAlongSide: 2
+    width: 3
+  - color: 5
+    side: 1
+    positionAlongSide: 6
+    width: 1
+  walls:
+  - side: 2
+    positionAlongSide: 0
+    width: 9
+  - side: 3
+    positionAlongSide: 0
+    width: 9
+  - side: 1
+    positionAlongSide: 1
+    width: 1
+  - side: 1
+    positionAlongSide: 5
+    width: 1
