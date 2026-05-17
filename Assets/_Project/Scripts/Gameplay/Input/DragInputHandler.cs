@@ -86,46 +86,59 @@ namespace ColorBlockJamClone.Gameplay.Input
 
         private void UpdateDrag()
         {
-            var currentGround = WorldOnGroundPlane(UnityEngine.Input.mousePosition);
-            Vector3 targetOffset = currentGround - _dragStartGround;
-            targetOffset.y = 0f;
+            Vector3 currentGround = WorldOnGroundPlane(UnityEngine.Input.mousePosition);
+            Vector3 desiredOffset = currentGround - _dragStartGround;
+            desiredOffset.y = 0f;
 
-            Vector3 diff = targetOffset - _currentBlockOffset;
-            float dist = diff.magnitude;
+            ApplyRubberBand(ref desiredOffset);
 
-            if (dist > 0.001f)
+            Vector3 newOffset = _currentBlockOffset;
+
+            Vector3 xTarget = new Vector3(desiredOffset.x, 0f, newOffset.z);
+            newOffset = FindFurthestValid(newOffset, xTarget);
+
+            Vector3 zTarget = new Vector3(newOffset.x, 0f, desiredOffset.z);
+            newOffset = FindFurthestValid(newOffset, zTarget);
+
+            _currentBlockOffset = newOffset;
+            _dragging.transform.position = _dragStartBlockPos + _currentBlockOffset;
+        }
+
+        // Mouse can be away from block maximum 1.5f distance
+        private void ApplyRubberBand(ref Vector3 desiredOffset)
+        {
+            const float MAX_DRIFT_CELLS = 1.5f;
+            float maxDrift = _grid.CellSize * MAX_DRIFT_CELLS;
+
+            Vector3 mouseFromBlock = desiredOffset - _currentBlockOffset;
+            if (mouseFromBlock.magnitude <= maxDrift) 
+                return;
+
+            Vector3 capped = mouseFromBlock.normalized * maxDrift;
+            Vector3 newDesired = _currentBlockOffset + capped;
+
+            _dragStartGround += desiredOffset - newDesired;
+            desiredOffset = newDesired;
+        }
+
+        private Vector3 FindFurthestValid(Vector3 from, Vector3 to)
+        {
+            if (IsValidOffset(to)) 
+                return to;
+
+            Vector3 low = from;
+            Vector3 high = to;
+
+            for (int i = 0; i < 8; i++)
             {
-                int subSteps = Mathf.Max(1, Mathf.CeilToInt(dist / (_grid.CellSize * 0.25f)));
-                Vector3 step = diff / subSteps;
-
-                for (int i = 0; i < subSteps; i++)
-                {
-                    Vector3 trial = _currentBlockOffset + step;
-                    if (IsValidOffset(trial))
-                    {
-                        _currentBlockOffset = trial;
-                        continue;
-                    }
-
-                    Vector3 trialX = _currentBlockOffset + new Vector3(step.x, 0f, 0f);
-                    if (Mathf.Abs(step.x) > 0.0001f && IsValidOffset(trialX))
-                    {
-                        _currentBlockOffset = trialX;
-                        continue;
-                    }
-
-                    Vector3 trialZ = _currentBlockOffset + new Vector3(0f, 0f, step.z);
-                    if (Mathf.Abs(step.z) > 0.0001f && IsValidOffset(trialZ))
-                    {
-                        _currentBlockOffset = trialZ;
-                        continue;
-                    }
-
-                    break;
-                }
+                Vector3 mid = (low + high) * 0.5f;
+                if (IsValidOffset(mid)) 
+                    low = mid;
+                else 
+                    high = mid;
             }
 
-            _dragging.transform.position = _dragStartBlockPos + _currentBlockOffset;
+            return low;
         }
 
         private bool IsValidOffset(Vector3 worldOffset)
