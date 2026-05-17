@@ -28,10 +28,13 @@ namespace ColorBlockJamClone.Core
         [SerializeField] private GameObject _blockedCellPrefab;
 
         [Header("Parent References in Scene")]
-        [SerializeField] private Transform _floorParent;
+        [SerializeField] private Transform _blockedCellParent;
         [SerializeField] private Transform _blocksParent;
         [SerializeField] private Transform _gatesParent;
         [SerializeField] private Transform _wallParent;
+
+        [Header("Floor")]
+        [SerializeField] private Renderer _floorRenderer;
 
         [Header("Input")]
         [SerializeField] private DragInputHandler _dragInput;
@@ -60,9 +63,21 @@ namespace ColorBlockJamClone.Core
 
         private void Awake()
         {
-            _blockPool = new MonoPool<Block>(_blockPrefab, _blocksParent, prewarm: 32);
+            _blockPool = new MonoPool<Block>(_blockPrefab, _blocksParent, prewarm: CalculateMaxBlocks());
             _timer = new Timer(0f);
             _timer.OnExpired += HandleTimerExpired;
+        }
+
+        private int CalculateMaxBlocks()
+        {
+            int max = 0;
+            foreach (var lvl in _levels)
+            {
+                if (lvl.blocks != null && lvl.blocks.Length > max)
+                    max = lvl.blocks.Length;
+            }
+
+            return max;
         }
 
         private void Start()
@@ -142,21 +157,36 @@ namespace ColorBlockJamClone.Core
 
         private void BuildFloorVisual()
         {
+            if (_floorRenderer != null)
+            {
+                _floorRenderer.transform.localScale = new Vector3(
+                    _grid.Width * _cellSize / 10f,
+                    1f,
+                    _grid.Height * _cellSize / 10f
+                );
+
+                var pos = _floorRenderer.transform.position;
+                _floorRenderer.transform.position = new Vector3(0f, pos.y, 0f);
+
+                var mat = _floorRenderer.material;
+                mat.mainTextureScale = new Vector2(_grid.Width, _grid.Height);
+            }
+
+            if (_blockedCellPrefab == null) return;
+
             for (int x = 0; x < _grid.Width; x++)
             {
                 for (int y = 0; y < _grid.Height; y++)
                 {
                     var cell = _grid.GetCell(new Vector2Int(x, y));
-                    var prefab = cell.IsBlocked ? _blockedCellPrefab : _floorCellPrefab;
-
-                    if (prefab == null) 
+                    if (!cell.IsBlocked) 
                         continue;
 
-                    var go = Instantiate(prefab, _floorParent);
+                    var go = Instantiate(_blockedCellPrefab, _blockedCellParent);
                     var target = _grid.GridToWorldCentered(new Vector2Int(x, y));
-                    target.y = go.transform.position.y; 
+                    target.y = go.transform.position.y;
                     go.transform.position = target;
-                    go.name = $"Cell_{x}_{y}{(cell.IsBlocked ? "_Blocked" : "")}";
+                    go.name = $"Blocked_{x}_{y}";
                     _activeFloor.Add(go);
                 }
             }
